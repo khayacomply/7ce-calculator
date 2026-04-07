@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>7 Changes Enterprise Quote System</title>
+<!-- PDF Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- ✅ AutoTable Plugin for Professional Tables -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<!-- Leaflet Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+body{font-family:Arial,sans-serif;background:#050505;color:#fff;margin:0;padding:20px;min-width:1200px;}
+.container{max-width:1100px;margin:0 auto;background:#0c0c12;padding:25px 30px;border-radius:8px;box-shadow:0 0 20px rgba(57,255,20,0.1);}
+h1{color:#39FF14;text-align:center;margin:0 0 20px 0;font-size:24px;}
+.client-details{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.client-details input{padding:10px 12px;border-radius:4px;border:1px solid #39FF14;background:#000;color:#fff;font-size:13px;width:100%;box-sizing:border-box;}
+.client-details input:focus{outline:none;border-color:#28CC11;box-shadow:0 0 8px rgba(57,255,20,0.3);}
+.notes-section{margin:15px 0;}
+.notes-section label{color:#39FF14;font-weight:bold;display:block;margin-bottom:8px;font-size:13px;}
+.notes-section textarea{width:100%;min-height:70px;padding:10px;border-radius:4px;border:1px solid #39FF14;background:#000;color:#fff;font-family:Arial;font-size:13px;box-sizing:border-box;resize:vertical;}
+.notes-section textarea:focus{outline:none;border-color:#28CC11;}
+.upload-section{margin:15px 0;}
+.upload-section label{color:#39FF14;font-weight:bold;display:block;margin:10px 0 6px 0;font-size:13px;}
+.upload-section input[type="file"]{background:#111;border:1px dashed #39FF14;padding:8px;border-radius:4px;color:#888;font-size:12px;cursor:pointer;}
+.upload-section input[type="file"]:hover{border-color:#28CC11;color:#39FF14;}
+.search-section{margin:20px 0;padding:15px;background:#111;border-radius:6px;border:1px solid #39FF14;}
+.search-section label{color:#39FF14;font-weight:bold;display:block;margin-bottom:12px;font-size:13px;}
+.search-box{display:flex;gap:10px;margin-bottom:12px;}
+.search-box input{flex:1;padding:10px 12px;border-radius:4px;border:1px solid #39FF14;background:#000;color:#fff;font-size:13px;}
+.search-box input:focus{outline:none;border-color:#28CC11;}
+.search-results{max-height:180px;overflow-y:auto;border:1px solid #39FF14;border-radius:4px;background:#0a0a0a;display:none;font-size:13px;}
+.search-result-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;}
+.search-result-item:hover{background:#1a1a2e;}
+.search-result-item:last-child{border-bottom:none;}
+.dropdown-row{display:grid;grid-template-columns:1fr 70px 90px;gap:10px;margin-top:12px;}
+.dropdown-row select,.dropdown-row input{padding:10px;background:#000;border:1px solid #39FF14;color:#fff;border-radius:4px;font-size:13px;}
+.dropdown-row select option{background:#0c0c12;color:#fff;}
+.dropdown-row select optgroup{background:#1a1a2e;color:#39FF14;font-weight:bold;}
+button{padding:10px 18px;border:none;border-radius:4px;cursor:pointer;background:linear-gradient(135deg,#39FF14,#28CC11);color:#000;font-weight:bold;font-size:13px;transition:all 0.2s;}
+button:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(57,255,20,0.4);}
+button:active{transform:translateY(0);}
+button.secondary{background:#555;color:#fff;}
+button.secondary:hover{background:#666;}
+button.danger{background:#ff4444;color:#fff;}
+button.danger:hover{background:#ff6666;}
+.actions{margin-top:20px;display:flex;gap:10px;justify-content:flex-end;}
+#quoteItemsList{margin:15px 0;}
+.quote-item{display:flex;justify-content:space-between;background:#111;padding:10px 12px;margin:6px 0;border-left:3px solid #39FF14;border-radius:0 4px 4px 0;font-size:13px;}
+.quote-item strong{color:#39FF14;}
+.quote-item small{color:#888;}
+.total{font-size:18px;margin-top:15px;color:#39FF14;text-align:right;padding:12px 15px;background:#111;border-radius:6px;border:1px solid #39FF14;font-weight:bold;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:#0a0a0a;}
+::-webkit-scrollbar-thumb{background:#39FF14;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#28CC11;}
+.admin-btn{position:fixed;bottom:15px;right:15px;z-index:1000;background:#333;color:#39FF14;padding:10px 16px;border:2px solid #39FF14;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px;}
+.admin-btn:hover{background:#444;}
+.admin-panel{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a1a;border:2px solid #39FF14;padding:20px;border-radius:8px;z-index:1001;width:420px;max-height:85vh;overflow-y:auto;}
+.admin-panel h3{color:#39FF14;margin:0 0 12px 0;font-size:16px;}
+.admin-panel button{width:100%;margin:6px 0;padding:11px;font-size:13px;}
+.admin-panel button.close-btn{background:#333;color:#aaa;border:1px solid #555;margin-top:12px;}
+.admin-panel button.close-btn:hover{background:#444;color:#fff;}
+.stock-modal,.adjust-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a1a;border:2px solid #39FF14;padding:20px;border-radius:8px;z-index:1001;width:520px;max-height:85vh;overflow-y:auto;}
+.stock-modal h3,.adjust-modal h3{color:#39FF14;margin:0 0 15px 0;font-size:16px;}
+.stock-list,.adjust-log{max-height:350px;overflow-y:auto;font-size:13px;}
+.stock-list strong{color:#39FF14;display:block;margin:12px 0 6px 0;font-size:14px;}
+.stock-list div{padding:4px 0;border-bottom:1px solid #222;}
+.stock-list div:last-child{border-bottom:none;}
+.low-stock{color:#ff6b6b;font-weight:bold;}
+.modal-close{margin-top:15px;background:#333;color:#fff;padding:9px 20px;border:1px solid #555;border-radius:4px;cursor:pointer;font-size:13px;}
+.modal-close:hover{background:#444;}
+.overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:1000;}
+.adjust-modal label{color:#39FF14;display:block;margin:12px 0 5px 0;font-size:13px;font-weight:bold;}
+.adjust-modal select,.adjust-modal input[type="number"],.adjust-modal input[type="text"]{width:100%;padding:10px;background:#0a0a0a;border:1px solid #39FF14;color:#fff;border-radius:4px;font-size:13px;box-sizing:border-box;}
+.adjust-modal select:focus,.adjust-modal input:focus{outline:none;border-color:#28CC11;}
+#adjustCurrentStock{color:#888;font-size:12px;margin:8px 0 10px 0;}
+.adjust-actions{display:flex;gap:10px;margin-top:18px;}
+.adjust-actions button{flex:1;padding:11px;font-size:13px;}
+#adjustLog{margin-top:15px;padding:10px;background:#0a0a0a;border-radius:4px;font-size:12px;color:#aaa;max-height:90px;overflow-y:auto;}
+#lowStockAlert{background:#2a1a1a;border:1px solid #ff6b6b;border-radius:4px;padding:10px;margin:0 0 12px 0;display:none;}
+#lowStockAlert strong{color:#ff6b6b;display:block;margin-bottom:6px;}
+#lowStockList{font-size:12px;line-height:1.4;}
+#lowStockList div{padding:2px 0;border-bottom:1px solid #333;}
+#lowStockList div:last-child{border-bottom:none;}
+.delivery-section{margin:20px 0;padding:15px;background:#111;border-radius:6px;border:1px solid #ff9f43;}
+.delivery-section label{color:#ff9f43;font-weight:bold;display:block;margin-bottom:12px;font-size:13px;}
+.delivery-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.delivery-grid select,.delivery-grid input{padding:8px;background:#000;border:1px solid #ff9f43;color:#fff;border-radius:4px;font-size:12px;width:100%;box-sizing:border-box;}
+.delivery-grid select:disabled{background:#111;border-color:#444;color:#888;cursor:not-allowed;}
+.delivery-config{background:#1a1a1a;padding:10px;border:1px solid #444;border-radius:4px;margin:10px 0;font-size:11px;}
+.delivery-config label{color:#888;font-size:10px;display:block;margin:4px 0 2px 0;}
+.delivery-config input{padding:6px;background:#000;border:1px solid #666;color:#fff;border-radius:3px;font-size:11px;width:100%;box-sizing:border-box;}
+.delivery-cost-box{background:#1a1a1a;padding:12px;border:1px solid #ff9f43;border-radius:4px;margin:10px 0;}
+.delivery-cost-box .cost{color:#39FF14;font-size:18px;font-weight:bold;}
+.delivery-cost-box .breakdown{color:#888;font-size:10px;margin-top:4px;white-space:pre-line;}
+.delivery-map{margin-top:15px;border:1px solid #444;border-radius:4px;overflow:hidden;}
+#deliveryMap{height:200px;width:100%;background:#1a1a1a;}
+.delivery-note{color:#888;font-size:11px;margin:8px 0;display:block;}
+.delivery-btn{background:#ff9f43;color:#000;width:100%;padding:12px;border:none;border-radius:4px;font-weight:bold;font-size:13px;cursor:pointer;margin-top:10px;}
+.delivery-btn:hover{background:#ffb366;}
+.delivery-helper-btn{background:#444;color:#fff;padding:5px 10px;border:none;border-radius:3px;font-size:11px;cursor:pointer;margin-left:5px;}
+.delivery-helper-btn:hover{background:#555;}
+.ref-table{margin-top:15px;padding:10px;background:#111;border:1px solid #444;border-radius:4px;font-size:11px;color:#888;}
+.ref-table details{cursor:pointer;}
+.ref-table summary{outline:none;}
+.ref-table .cols{column-count:2;margin-top:8px;}
+.text-right{text-align:right;}
+.hidden{display:none;}
+
+/* Universal Town Search Styles */
+.universal-search{margin:20px 0;padding:15px;background:#1a1a1a;border-radius:6px;border:1px solid #39FF14;}
+.universal-search label{color:#39FF14;font-weight:bold;display:block;margin-bottom:10px;font-size:13px;}
+.universal-search-input{display:flex;gap:10px;}
+.universal-search-input input{flex:1;padding:12px;background:#000;border:1px solid #39FF14;color:#fff;border-radius:4px;font-size:13px;}
+.universal-search-input button{padding:12px 24px;background:#39FF14;color:#000;border:none;border-radius:4px;font-weight:bold;cursor:pointer;}
+.universal-search-input button:hover{background:#28CC11;}
+#townSearchResults{max-height:300px;overflow-y:auto;margin-top:10px;border:1px solid #39FF14;border-radius:4px;background:#0a0a0a;display:none;}
+.town-result-item{padding:12px;border-bottom:1px solid #222;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.town-result-item:hover{background:#1a1a2e;}
+.town-result-item:last-child{border-bottom:none;}
+.town-result-name{color:#39FF14;font-weight:bold;}
+.town-result-info{color:#888;font-size:12px;}
+.town-result-select{color:#39FF14;font-weight:bold;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>7 Changes Enterprise</h1>
+  <div class="client-details">
+    <input id="clientName" placeholder="Client Name">
+    <input id="clientPhone" placeholder="Phone">
+    <input id="clientEmail" placeholder="Email">
+    <input id="eventDate" type="date">
+    <input id="eventVenue" placeholder="Event Venue">
+    <input id="quoteRef" readonly style="background:#111;color:#888;cursor:not-allowed;">
+  </div>
+  <div class="notes-section">
+    <label>Additional Notes / Special Requests:</label>
+    <textarea id="additionalNotes" placeholder="Enter any special instructions, delivery notes, or terms..."></textarea>
+  </div>
+  <div class="upload-section">
+    <label>Upload Logo:</label>
+    <input type="file" id="logoUpload" accept="image/*">
+    <label>Upload Watermark:</label>
+    <input type="file" id="watermarkUpload" accept="image/*">
+  </div>
+  <div class="search-section">
+    <label>Search or Select Products:</label>
+    <div class="search-box">
+      <input type="text" id="serviceSearch" placeholder="Type to search (e.g., tent, chair, wedding)...">
+      <button type="button" onclick="addFromSearch()">+ Add</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+    <div class="dropdown-row">
+      <select id="serviceDropdown"><option value="">-- Select a Service --</option></select>
+      <input type="number" id="dropdownQuantity" value="1" min="1">
+      <button type="button" onclick="addFromDropdown()">+ Add</button>
+    </div>
+  </div>
+  
+  <!-- Universal Town Search -->
+  <div class="universal-search">
+    <label>🔍 Quick Town/City Search (All SA Locations)</label>
+    <div class="universal-search-input">
+      <input type="text" id="universalTownSearch" placeholder="Type town name (e.g., Ritchie, Barkly West, Rustenburg)...">
+      <button type="button" onclick="searchTowns()">Search</button>
+    </div>
+    <div id="townSearchResults"></div>
+  </div>
+  
+  <div class="delivery-section">
+    <label>🚚 Transport and Logistics</label>
+    <div class="delivery-grid">
+      <div>
+        <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Province</label>
+        <select id="deliveryProvince">
+          <option value="">-- Select Province --</option>
+          <option value="Gauteng">Gauteng</option>
+          <option value="Limpopo">Limpopo</option>
+          <option value="Mpumalanga">Mpumalanga</option>
+          <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+          <option value="Free State">Free State</option>
+          <option value="Eastern Cape">Eastern Cape</option>
+          <option value="Western Cape">Western Cape</option>
+          <option value="Northern Cape">Northern Cape</option>
+          <option value="North West">North West</option>
+        </select>
+      </div>
+      <div>
+        <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Town/City</label>
+        <select id="deliveryTown" disabled>
+          <option value="">-- Select Province First --</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Venue Address (Optional)</label>
+      <input type="text" id="deliveryAddress" placeholder="e.g., Sandton Convention Centre, 15 Maude Street" style="width:100%;padding:10px;background:#000;border:1px solid #ff9f43;color:#fff;border-radius:4px;font-size:13px;box-sizing:border-box;">
+      <small class="delivery-note">* For record keeping only</small>
+    </div>
+    <div class="delivery-config">
+      <label>🚚 Vehicle Settings (Edit as needed):</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;">
+        <div><label>Fuel Consumption (km/L)</label><input type="number" id="cfgFuelConsumption" value="11" min="1" step="0.1"></div>
+        <div><label>Fuel Price (R/L)</label><input type="number" id="cfgFuelPrice" value="28.50" min="0" step="0.01"></div>
+        <div><label>Wear & Tear (R/km)</label><input type="number" id="cfgWearTear" value="2.50" min="0" step="0.01"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:5px;">
+        <div><label>Labour Fee (R)</label><input type="number" id="cfgLabour" value="1000" min="0"></div>
+        <div><label>Risk/Loading Fee (R)</label><input type="number" id="cfgRisk" value="800" min="0"></div>
+        <div><label>Profit Margin (R)</label><input type="number" id="cfgProfit" value="3000" min="0"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">One-Way Distance from Kimberley (km)</label>
+      <div style="display:flex;gap:5px;">
+        <input type="number" id="deliveryKm" placeholder="Enter distance in km" min="0" style="flex:1;padding:10px;background:#000;border:1px solid #ff9f43;color:#fff;border-radius:4px;font-size:13px;box-sizing:border-box;">
+        <button type="button" class="delivery-helper-btn" onclick="openDistanceHelper()" title="Open Google Maps to check distance">🔍</button>
+      </div>
+    </div>
+    <div class="delivery-cost-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#888;font-size:12px;">💰 TOTAL CHARGE TO CLIENT:</span>
+        <span class="cost" id="deliveryTotal">R0.00</span>
+      </div>
+      <div class="breakdown" id="deliveryBreakdown">Enter distance to calculate costs</div>
+    </div>
+    <small class="delivery-note">⚠️ Northern Cape (Kimberley base) = Local delivery (no surcharge for Kimberley only)</small>
+    <button type="button" class="delivery-btn" onclick="addDeliveryCost()">+ Add Delivery Cost to Quote</button>
+    <div class="delivery-map"><div id="deliveryMap"></div></div>
+    <div class="ref-table">
+      <details>
+        <summary>📍 Reference Distances from Kimberley (One-Way)</summary>
+        <div class="cols">
+          <strong>Northern Cape:</strong> Kimberley 0km | Ritchie 35km | Barkly West 40km | Warrenton 80km | Kuruman 190km | Upington 420km | Springbok 485km<br>
+          <strong>North West:</strong> Mahikeng 240km | Rustenburg 380km | Potchefstroom 290km | Vryburg 195km<br>
+          <strong>Free State:</strong> Bloemfontein 320km | Welkom 280km | Kroonstad 240km<br>
+          <strong>Gauteng:</strong> JHB 460km | PTA 490km | Sandton 462km<br>
+          <strong>Mpumalanga:</strong> Witbank 610km | Nelspruit 720km | Secunda 650km<br>
+          <strong>Limpopo:</strong> Polokwane 650km | Thohoyandou 720km<br>
+          <strong>KZN:</strong> Durban 750km | PMB 720km | Newcastle 580km<br>
+          <strong>EC:</strong> PE 900km | East London 850km<br>
+          <strong>WC:</strong> Cape Town 1050km | George 920km
+        </div>
+      </details>
+    </div>
+  </div>
+  <div id="quoteItemsList"></div>
+  <div class="total">TOTAL: <span id="total">R0.00</span></div>
+  <div class="actions">
+    <button onclick="generateQuotePDF()">Generate Quote</button>
+    <button onclick="generateInvoicePDF()">Generate Invoice</button>
+    <button class="secondary" onclick="clearQuote()">Clear All</button>
+  </div>
+</div>
+<button class="admin-btn" onclick="toggleAdminPanel()">⚙️ Admin Panel</button>
+<div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+<div class="admin-panel" id="adminPanel">
+  <h3>🔧 Admin Panel</h3>
+  <div id="lowStockAlert"><strong>⚠️ Low Stock (≤10 units):</strong><div id="lowStockList"></div></div>
+  <button onclick="generateMonthlyReport()">📊 Monthly Performance Report</button>
+  <button class="secondary" onclick="viewStockLevels()">📦 View Stock Levels</button>
+  <button class="secondary" onclick="openStockAdjuster()">✏️ Adjust Stock (Manual)</button>
+  <button class="secondary" onclick="viewAdjustmentHistory()">📜 Adjustment History</button>
+  <button class="secondary" onclick="exportAllData()">💾 Export Backup</button>
+  <button class="secondary" onclick="importDataPrompt()">📤 Import Backup</button>
+  <button class="danger" onclick="resetAllData()">⚠️ Reset All Data</button>
+  <button class="close-btn" onclick="toggleAdminPanel()">Close</button>
+</div>
+<div class="stock-modal" id="stockModal">
+  <h3>📦 Current Stock Levels</h3>
+  <div class="stock-list" id="stockList"></div>
+  <button class="modal-close" onclick="closeStockModal()">Close</button>
+</div>
+<div class="adjust-modal" id="adjustModal">
+  <h3>✏️ Adjust Stock Level</h3>
+  <label>Select Item:</label>
+  <select id="adjustItemSelect"><option value="">-- Choose an item --</option></select>
+  <div id="adjustCurrentStock"></div>
+  <label>New Physical Count:</label>
+  <input type="number" id="adjustNewCount" min="0" placeholder="Enter the count from your notebook">
+  <label>Reason/Notes:</label>
+  <input type="text" id="adjustReason" placeholder="e.g., 3 broken, lost, found in storage">
+  <div class="adjust-actions">
+    <button onclick="saveStockAdjustment()">✅ Update Stock</button>
+    <button class="secondary" onclick="closeAdjustModal()">Cancel</button>
+  </div>
+  <div id="adjustLog"><em style="color:#666">No adjustments recorded yet</em></div>
+</div>
+<input type="file" id="importFile" accept=".json" class="hidden" onchange="handleFileImport(event)">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const BANKING_DETAILS={bank:"First National Bank",accountHolder:"7 Changes Enterprise",accountType:"Current Account",accountNumber:"63113987870",contactPerson:"Angie",phone:"076 113 5095",emailGeneral:"angie@7changesenterprise.co.za",emailQuotes:"quotes@7changesenterprise.co.za"};
+let quoteItems=[],quoteRef="",logoDataUrl=null,watermarkDataUrl=null;
+let services = [
+  {name:"Centerpiece", price:50, category:"Event Decor", stock: 50, type:"product"},
+  {name:"Napkins", price:10, category:"Event Decor", stock: 200, type:"product"},
+  {name:"Under Plates", price:16, category:"Event Decor", stock: 200, type:"product"},
+  {name:"Table Runners", price:30, category:"Event Decor", stock: 150, type:"product"},
+  {name:"Napkin Rings", price:5, category:"Event Decor", stock: 200, type:"product"},
+  {name:"Table Number Holder", price:8, category:"Event Decor", stock: 80, type:"product"},
+  {name:"Welcome Table", price:450, category:"Event Decor", stock: 10, type:"product"},
+  {name:"Main Table", price:450, category:"Event Decor", stock: 15, type:"product"}, // ✅ UPDATED: R300 → R450
+  {name:"Cocktail Table", price:80, category:"Event Decor", stock: 20, type:"product"},
+  {name:"10 Seater Round Table", price:70, category:"Event Decor", stock: 25, type:"product"},
+  {name:"8 Seater Long Table", price:120, category:"Event Decor", stock: 20, type:"product"},
+  {name:"Easel (Silver/Clear/Gold)", price:100, category:"Event Decor", stock: 12, type:"product"},
+  {name:"White Plate", price:14, category:"Crockery", stock: 200, type:"product"},
+  {name:"White Side Plate", price:12, category:"Crockery", stock: 150, type:"product"},
+  {name:"White Desert Plate", price:10, category:"Crockery", stock: 150, type:"product"},
+  {name:"Gold Desert Spoon", price:3, category:"Cutlery", stock: 150, type:"product"},
+  {name:"Gold Fork", price:3, category:"Cutlery", stock: 150, type:"product"},
+  {name:"Gold Knife", price:3, category:"Cutlery", stock: 150, type:"product"},
+  {name:"White Wine Glass", price:8, category:"Glassware", stock: 200, type:"product"},
+  {name:"Red Wine Glass", price:8, category:"Glassware", stock: 200, type:"product"},
+  {name:"Water Glass", price:8, category:"Glassware", stock: 200, type:"product"},
+  {name:"Fancy Cocktail Glass", price:14, category:"Glassware", stock: 200, type:"product"},
+  {name:"Normal Black Chair", price:7, category:"Chairs", stock: 200, type:"product"},
+  {name:"Padded Chair", price:120, category:"Chairs", stock: 100, type:"product"},
+  {name:"Wimbledon/Tiffany/Spider Chair", price:40, category:"Chairs", stock: 360, type:"product"}, // ✅ STOCK UPDATED: 80 → 120 (price kept at R40)
+  {name:"His & Her Chairs", price:400, category:"Chairs", stock: 5, type:"product"},
+  {name:"Kiddies Chairs", price:10, category:"Chairs", stock: 100, type:"product"},
+  // ✅ NEW CHAIR SECTION ITEMS ADDED
+  {name:"Chair Covers", price:40, category:"Chairs", stock: 100, type:"product"},
+  {name:"Tie Bag", price:20, category:"Chairs", stock: 100, type:"product"},
+  {name:"Tiffany Chairs", price:40, category:"Chairs", stock: 150, type:"product"},
+  {name:"Padded Chairs", price:120, category:"Chairs", stock: 100, type:"product"},
+  {name:"Kiddies Table", price:20, category:"Tables", stock: 50, type:"product"},
+  {name:"1 Seater Couch", price:400, category:"Furniture", stock: 8, type:"product"},
+  {name:"2 Seater Couch", price:550, category:"Furniture", stock: 6, type:"product"},
+  {name:"3 Seater Couch", price:650, category:"Furniture", stock: 4, type:"product"},
+  {name:"2 Seater Ottoman", price:200, category:"Furniture", stock: 10, type:"product"},
+  {name:"Coffee Table", price:300, category:"Furniture", stock: 8, type:"product"},
+  {name:"Ice Bucket & Stand", price:300, category:"Furniture", stock: 12, type:"product"},
+  {name:"Balloon Garland Package", price:1500, category:"Decor", stock: 15, type:"product"},
+  {name:"Balloon Garland Package (Premium)", price:1800, category:"Decor", stock: 10, type:"product"},
+  {name:"Personalized Welcome Board", price:550, category:"Decor", stock: 20, type:"product"},
+  {name:"Wedding Pic Board (1225x2450)", price:1600, category:"Decor", stock: 5, type:"product"},
+  {name:"Backdrop", price:1200, category:"Decor", stock: 15, type:"product"},
+  {name:"Kiddies Backdrop", price:650, category:"Decor", stock: 10, type:"product"},
+   {name:"Kiddies Theme Board", price:850, category:"Decor", stock: 8, type:"product"},
+   {name:"LED Angel Wings", price:400, category:"Decor", stock: 3, type:"product"},
+  // ✅ UPDATED CARPET SECTION
+  {name:"Black Carpet 10m", price:400, category:"Decor", stock: 6, type:"product"},
+  {name:"White Floor 10m", price:400, category:"Decor", stock: 6, type:"product"},
+  {name:"Red Carpet 10m", price:400, category:"Decor", stock: 6, type:"product"},
+  {name:"Black Carpet 20m", price:800, category:"Decor", stock: 6, type:"product"},
+  {name:"White Floor 20m", price:800, category:"Decor", stock: 6, type:"product"},
+  {name:"Red Carpet 20m", price:800, category:"Decor", stock: 6, type:"product"},
+  {name:"Stanchions", price:150, category:"Decor", stock: 20, type:"product"},
+  {name:"Stage", price:600, category:"Equipment", stock: 10, type:"product"},
+  {name:"Cabana Tent - 30 people (3x6)", price:800, category:"Cabana Tents", stock: 4, type:"product"},
+  {name:"Cabana Tent - 40 people (3x9)", price:1000, category:"Cabana Tents", stock: 3, type:"product"},
+  {name:"Cabana Tent - 60 people (6x6)", price:1200, category:"Cabana Tents", stock: 2, type:"product"},
+  {name:"Cabana Tent - 80 people (6x9)", price:1500, category:"Cabana Tents", stock: 2, type:"product"},
+  {name:"Cabana Tent - 100 people (6x12)", price:1800, category:"Cabana Tents", stock: 1, type:"product"},
+  {name:"Stretch Tent - 30 people (3x6)", price:600, category:"Stretch Tents", stock: 5, type:"product"},
+  {name:"Stretch Tent - 40 people (3x9)", price:800, category:"Stretch Tents", stock: 4, type:"product"},
+  {name:"Stretch Tent - 60 people (6x6)", price:900, category:"Stretch Tents", stock: 3, type:"product"},
+  {name:"Stretch Tent - 80 people (6x9)", price:1200, category:"Stretch Tents", stock: 2, type:"product"},
+  {name:"Stretch Tent - 100 people (6x12)", price:1500, category:"Stretch Tents", stock: 2, type:"product"},
+  {name:"Mobile Kitchen", price:1100, category:"Equipment", stock: 2, type:"product"},
+  {name:"Mobile Freezer", price:1300, category:"Equipment", stock: 2, type:"product"},
+  {name:"VIP Toilet", price:1500, category:"Equipment", stock: 3, type:"product"},
+  {name:"Normal Toilet", price:350, category:"Equipment", stock: 8, type:"product"},
+  {name:"Projector", price:350, category:"Equipment", stock: 4, type:"product"},
+  {name:"Projector Screens", price:400, category:"Equipment", stock: 4, type:"product"},
+  {name:"Luxurious Car", price:2500, category:"Equipment", stock: 1, type:"product"},
+  {name:"Drone (Video & Photos)", price:1500, category:"Equipment", stock: 2, type:"product"},
+  {name:"Set Up", price:600, category:"Services", stock: "unlimited", type:"service"},
+   {name:"Set Up (Full Service)", price:3000, category:"Services", stock: "unlimited", type:"service"},
+  {name:"Transport", price:300, category:"Services", stock: "unlimited", type:"service"},
+  {name:"Transport (Long Distance)", price:800, category:"Services", stock: "unlimited", type:"service"},
+  // ✅ UPDATED FUNERAL TENTS SECTION
+  {name:"Funeral Tent 5x10", price:1000, category:"Tents", stock: 6, type:"product"},
+  {name:"Funeral Tent 7x12", price:1200, category:"Tents", stock: 6, type:"product"}
+];
+
+// ✅ UPDATED: All towns with accurate distances from Kimberley, Northern Cape
+const SA_LOCATIONS = {
+  "Gauteng": ["Johannesburg", "Pretoria", "Soweto", "Sandton", "Midrand", "Centurion", "Benoni", "Boksburg", "Brakpan", "Germiston", "Kempton Park", "Springs", "Alberton", "Edenvale", "Bedfordview", "Randburg", "Roodepoort", "Vanderbijlpark", "Vereeniging", "Sebokeng"],
+  "Limpopo": ["Polokwane", "Thohoyandou", "Giyani", "Phalaborwa", "Tzaneen", "Mokopane", "Bela-Bela", "Lephalale", "Musina"],
+  "Mpumalanga": ["Nelspruit", "Witbank", "Secunda", "Standerton", "Ermelo", "Middelburg", "Barberton", "Hazyview", "White River"],
+  "KwaZulu-Natal": ["Durban", "Pietermaritzburg", "Newcastle", "Richards Bay", "Empangeni", "Ladysmith", "Port Shepstone", "Margate", "Stanger", "Ulundi"],
+  "Free State": ["Bloemfontein", "Welkom", "Kroonstad", "Bethlehem", "Sasolburg", "Phuthaditjhaba", "Virginia", "Odendaalsrus"],
+  "Eastern Cape": ["Port Elizabeth", "East London", "Mthatha", "Grahamstown", "King William's Town", "Queenstown", "Uitenhage", "Despatch", "Butterworth"],
+  "Western Cape": ["Cape Town", "Stellenbosch", "Paarl", "George", "Worcester", "Mossel Bay", "Knysna", "Oudtshoorn", "Hermanus", "Somerset West"],
+  "Northern Cape": ["Kimberley", "Upington", "Kuruman", "De Aar", "Springbok", "Prieska", "Carnarvon", "Williston", "Ritchie", "Barkly West", "Warrenton"],
+  "North West": ["Mahikeng", "Rustenburg", "Potchefstroom", "Klerksdorp", "Brits", "Lichtenburg", "Vryburg", "Taung", "Schweizer-Reneke"]
+};
+
+// ✅ UPDATED: Coordinates for all towns including new ones
+const TOWN_COORDS = {
+  "Kimberley": [-28.7282, 24.7499], "Johannesburg": [-26.2041, 28.0473], "Pretoria": [-25.7479, 28.2293],
+  "Durban": [-29.8587, 31.0218], "Cape Town": [-33.9249, 18.4241], "Bloemfontein": [-29.1211, 26.2142],
+  "Polokwane": [-23.9045, 29.4689], "Mahikeng": [-25.8601, 25.6403], "Rustenburg": [-25.6672, 27.2424],
+  "Port Elizabeth": [-33.9608, 25.6022], "East London": [-33.0153, 27.9116], "Nelspruit": [-25.4753, 30.9700],
+  "Pietermaritzburg": [-29.6167, 30.3833], "Welkom": [-27.9772, 26.7336], "Kroonstad": [-27.6503, 27.2344],
+  "Potchefstroom": [-26.7136, 27.0969], "Klerksdorp": [-26.8667, 26.6667], "Upington": [-28.4478, 21.2561],
+  "Kuruman": [-27.4597, 23.4331], "Newcastle": [-27.7575, 29.9319], "Richards Bay": [-28.7830, 32.0378],
+  "Queenstown": [-31.8978, 26.8753], "George": [-33.9628, 22.4619], "Stellenbosch": [-33.9321, 18.8602],
+  "Paarl": [-33.7342, 18.9644], "Worcester": [-33.6461, 19.4486], "Thohoyandou": [-22.9486, 30.4844],
+  "Phalaborwa": [-23.9431, 31.1411], "Tzaneen": [-23.8333, 30.1667], "Witbank": [-25.8703, 29.2336],
+  "Secunda": [-26.5500, 29.1667], "Middelburg": [-25.7750, 29.4667], "Barberton": [-25.7833, 31.0500],
+  "Soweto": [-26.2678, 27.8585], "Midrand": [-25.9894, 28.1289], "Centurion": [-25.8601, 28.1889],
+  "Benoni": [-26.1886, 28.3206], "Boksburg": [-26.2122, 28.2628], "Brakpan": [-26.2367, 28.3697],
+  "Germiston": [-26.2250, 28.1667], "Kempton Park": [-26.1014, 28.2306], "Springs": [-26.2500, 28.4000],
+  "Alberton": [-26.2667, 28.1167], "Edenvale": [-26.1333, 28.1500], "Bedfordview": [-26.1333, 28.1333],
+  "Randburg": [-26.0939, 28.0061], "Roodepoort": [-26.1625, 27.8719], "Vanderbijlpark": [-26.7117, 27.8378],
+  "Vereeniging": [-26.6497, 27.9314], "Sebokeng": [-26.5833, 27.8167], "Giyani": [-23.3000, 30.7167],
+  "Mokopane": [-24.1833, 29.0000], "Bela-Bela": [-24.7833, 28.2833], "Lephalale": [-23.6667, 27.6833],
+  "Musina": [-22.3333, 30.0333], "Standerton": [-26.9333, 29.2500], "Ermelo": [-26.5333, 29.9833],
+  "Hazyview": [-25.0333, 31.1333], "White River": [-25.3333, 31.0167], "Empangeni": [-28.7625, 31.8969],
+  "Ladysmith": [-28.5617, 29.7800], "Port Shepstone": [-30.7417, 30.4550], "Margate": [-30.8667, 30.3667],
+  "Stanger": [-29.3333, 31.2833], "Ulundi": [-28.3333, 31.4167], "Bethlehem": [-28.2333, 28.3167],
+  "Sasolburg": [-26.8000, 27.8167], "Phuthaditjhaba": [-28.5167, 28.8167], "Virginia": [-28.1000, 26.8500],
+  "Odendaalsrus": [-27.8833, 26.7167], "Mthatha": [-31.5833, 28.7833], "King William's Town": [-32.8833, 27.4000],
+  "Uitenhage": [-33.7578, 25.3972], "Despatch": [-33.8167, 25.4167], "Butterworth": [-32.3333, 28.1500],
+  "Mossel Bay": [-34.1833, 22.1333], "Knysna": [-34.0361, 23.0472], "Oudtshoorn": [-33.5833, 22.2000],
+  "Hermanus": [-34.4189, 19.2344], "Somerset West": [-34.0781, 18.8431], "De Aar": [-30.6500, 24.0167],
+  "Springbok": [-29.6667, 17.8833], "Prieska": [-29.6667, 22.7333], "Carnarvon": [-30.9667, 22.1333],
+  "Williston": [-31.3667, 21.3667], "Lichtenburg": [-26.1500, 26.1667], "Vryburg": [-26.9500, 24.7333],
+  "Taung": [-27.5333, 24.7667], "Schweizer-Reneke": [-26.2833, 25.4167],
+  // ✅ NEW TOWNS
+  "Ritchie": [-28.9997, 24.7833],
+  "Barkly West": [-29.0167, 24.6833],
+  "Warrenton": [-28.9833, 24.8333]
+};
+
+// ✅ ACCURATE ROAD DISTANCES FROM KIMBERLEY, NORTHERN CAPE (ALL SA)
+const DISTANCE_REFERENCE = {
+  // ========== NORTHERN CAPE ==========
+  "Kimberley": 0,
+  "Ritchie": 35,
+  "Barkly West": 40,
+  "Warrenton": 80,
+  "Postmasburg": 130,
+  "Kathu": 160,
+  "Kuruman": 190,
+  "Hotazel": 200,
+  "De Aar": 210,
+  "Carnarvon": 245,
+  "Prieska": 285,
+  "Williston": 310,
+  "Upington": 420,
+  "Springbok": 485,
+  "Calvinia": 380,
+  "Van Wyksvlei": 340,
+  
+  // ========== NORTH WEST ==========
+  "Mahikeng": 240,
+  "Vryburg": 195,
+  "Taung": 230,
+  "Schweizer-Reneke": 250,
+  "Lichtenburg": 210,
+  "Rustenburg": 380,
+  "Potchefstroom": 290,
+  "Klerksdorp": 310,
+  "Brits": 395,
+  
+  // ========== FREE STATE ==========
+  "Bloemfontein": 320,
+  "Welkom": 280,
+  "Kroonstad": 240,
+  "Virginia": 275,
+  "Odendaalsrus": 268,
+  "Bethlehem": 380,
+  "Sasolburg": 340,
+  "Phuthaditjhaba": 360,
+  
+  // ========== GAUTENG ==========
+  "Johannesburg": 460,
+  "Pretoria": 490,
+  "Soweto": 465,
+  "Sandton": 462,
+  "Midrand": 475,
+  "Centurion": 485,
+  "Benoni": 470,
+  "Boksburg": 468,
+  "Brakpan": 472,
+  "Germiston": 466,
+  "Kempton Park": 478,
+  "Springs": 482,
+  "Alberton": 467,
+  "Edenvale": 470,
+  "Bedfordview": 468,
+  "Randburg": 465,
+  "Roodepoort": 458,
+  "Vanderbijlpark": 440,
+  "Vereeniging": 435,
+  "Sebokeng": 438,
+  
+  // ========== MPUMALANGA ==========
+  "Witbank": 610,
+  "Middelburg": 630,
+  "Secunda": 650,
+  "Standerton": 600,
+  "Ermelo": 680,
+  "Nelspruit": 720,
+  "Barberton": 750,
+  "Hazyview": 780,
+  "White River": 740,
+  
+  // ========== LIMPOPO ==========
+  "Polokwane": 650,
+  "Thohoyandou": 720,
+  "Giyani": 735,
+  "Phalaborwa": 780,
+  "Tzaneen": 700,
+  "Mokopane": 580,
+  "Bela-Bela": 520,
+  "Lephalale": 490,
+  "Musina": 790,
+  
+  // ========== KWAZULU-NATAL ==========
+  "Durban": 750,
+  "Pietermaritzburg": 720,
+  "Newcastle": 580,
+  "Richards Bay": 820,
+  "Empangeni": 810,
+  "Ladysmith": 650,
+  "Port Shepstone": 790,
+  "Margate": 800,
+  "Stanger": 740,
+  "Ulundi": 690,
+  
+  // ========== EASTERN CAPE ==========
+  "Port Elizabeth": 900,
+  "East London": 850,
+  "Mthatha": 950,
+  "Queenstown": 780,
+  "King William's Town": 840,
+  "Uitenhage": 910,
+  "Despatch": 905,
+  "Butterworth": 920,
+  
+  // ========== WESTERN CAPE ==========
+  "Cape Town": 1050,
+  "Stellenbosch": 1040,
+  "Paarl": 1030,
+  "George": 920,
+  "Worcester": 980,
+  "Mossel Bay": 960,
+  "Knysna": 990,
+  "Oudtshoorn": 870,
+  "Hermanus": 1080,
+  "Somerset West": 1045
+};
+
+function loadStockFromStorage(){const s=localStorage.getItem('7CE_stock');if(s){try{const d=JSON.parse(s);services.forEach(x=>{if(d[x.name]!==undefined)x.stock=d[x.name]})}catch(e){console.error("Stock load error:",e)}}}
+function saveStockToStorage(){const d={};services.forEach(x=>d[x.name]=x.stock);localStorage.setItem('7CE_stock',JSON.stringify(d))}
+function loadTransactions(){return JSON.parse(localStorage.getItem('7CE_transactions')||"[]")}
+function saveTransactions(t){localStorage.setItem('7CE_transactions',JSON.stringify(t))}
+function loadAdjustments(){return JSON.parse(localStorage.getItem('7CE_stock_adjustments')||"[]")}
+function saveAdjustments(a){localStorage.setItem('7CE_stock_adjustments',JSON.stringify(a))}
+loadStockFromStorage();
+
+// ===== FILE UPLOADS - FIXED WITH ERROR HANDLING =====
+document.getElementById("logoUpload").addEventListener("change",function(e){
+  if(e.target.files && e.target.files[0]){
+    const reader=new FileReader();
+    reader.onload=function(evt){
+      logoDataUrl=evt.target.result;
+      console.log("✅ Logo loaded:",logoDataUrl.substring(0,50)+"...");
+      alert("✅ Logo uploaded successfully!");
+    };
+    reader.onerror=function(err){
+      console.error("❌ Error reading logo:",err);
+      alert("❌ Error loading logo. Try a smaller PNG/JPG file.");
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  }
+});
+
+document.getElementById("watermarkUpload").addEventListener("change",function(e){
+  if(e.target.files && e.target.files[0]){
+    const reader=new FileReader();
+    reader.onload=function(evt){
+      watermarkDataUrl=evt.target.result;
+      console.log("✅ Watermark loaded:",watermarkDataUrl.substring(0,50)+"...");
+      alert("✅ Watermark uploaded successfully!");
+    };
+    reader.onerror=function(err){
+      console.error("❌ Error reading watermark:",err);
+      alert("❌ Error loading watermark. Try a smaller PNG/JPG file.");
+    };
+    reader.readAsDataURL(e.target.files[0]);
+  }
+});
+
+function populateDropdown(){
+  const dd=document.getElementById("serviceDropdown");dd.innerHTML='<option value="">-- Select a Service --</option>';
+  const cats={};services.forEach(s=>{if(!cats[s.category])cats[s.category]=[];cats[s.category].push(s)});
+  Object.keys(cats).sort().forEach(cat=>{
+    const og=document.createElement('optgroup');og.label=cat;
+    cats[cat].forEach(s=>{
+      const opt=document.createElement('option');opt.value=services.indexOf(s);
+      const stock=s.stock==="unlimited"?"∞":`(${s.stock} left)`;
+      opt.textContent=s.name+" - R"+s.price+" "+stock;
+      if(s.stock!=="unlimited"&&s.stock<10)opt.style.color="#ff6b6b";
+      og.appendChild(opt)
+    });dd.appendChild(og)
+  })
+}
+populateDropdown();
+const searchInput=document.getElementById("serviceSearch"),searchResults=document.getElementById("searchResults");
+searchInput.addEventListener("input",function(){
+  const q=this.value.toLowerCase().trim();searchResults.innerHTML="";
+  if(q.length<2){searchResults.style.display="none";return}
+  const matches=services.filter(s=>s.name.toLowerCase().includes(q)||s.category.toLowerCase().includes(q));
+  if(matches.length>0){
+    searchResults.style.display="block";
+    matches.forEach(sv=>{
+      const div=document.createElement("div");div.className="search-result-item";
+      const stock=sv.stock==="unlimited"?"∞":sv.stock+" left";
+      const low=sv.stock!=="unlimited"&&sv.stock<10?'<span style="color:#ff6b6b"> ⚠️ Low</span>':'';
+      div.innerHTML=`<div><strong>${sv.name}</strong><br><small style="color:#888">${sv.category} - R${sv.price} | Stock: ${stock}${low}</small></div><span style="color:#39FF14;font-weight:bold">+ Add</span>`;
+      div.onclick=()=>{addToQuote(sv,1);searchInput.value="";searchResults.style.display="none";searchInput.focus()};
+      searchResults.appendChild(div)
+    })
+  }else{searchResults.style.display="block";searchResults.innerHTML='<div style="padding:15px;color:#888">No products found for "'+q+'"</div>'}
+});
+document.addEventListener("click",e=>{if(!searchInput.contains(e.target)&&!searchResults.contains(e.target))searchResults.style.display="none"});
+function addFromSearch(){const q=searchInput.value.toLowerCase().trim();if(q.length<2)return;const m=services.find(s=>s.name.toLowerCase().includes(q)||s.category.toLowerCase().includes(q));if(m){addToQuote(m,1);searchInput.value="";searchResults.style.display="none"}else alert("Product not found.")}
+function generateQuoteRef(){quoteRef="7CE-"+Date.now().toString().slice(-6);document.getElementById("quoteRef").value=quoteRef}
+generateQuoteRef();
+function addFromDropdown(){const idx=document.getElementById("serviceDropdown").value,qty=parseInt(document.getElementById("dropdownQuantity").value)||1;if(!idx){alert("Select a product");return}addToQuote(services[idx],qty);document.getElementById("serviceDropdown").value="";document.getElementById("dropdownQuantity").value="1"}
+function addToQuote(service,qty){
+  if(service.type==="product"&&service.stock!=="unlimited"){
+    const inQuote=quoteItems.find(i=>i.name===service.name)?.quantity||0;
+    if(inQuote+qty>service.stock){alert(`⚠️ Only ${service.stock}x "${service.name}" in stock!\nIn quote: ${inQuote}\nAvailable: ${service.stock}`);return}
+  }
+  const ex=quoteItems.find(i=>i.name===service.name);
+  if(ex)ex.quantity+=qty;else quoteItems.push({name:service.name,price:service.price,quantity:qty,category:service.category});
+  renderQuote()
+}
+function renderQuote(){
+  const list=document.getElementById("quoteItemsList");list.innerHTML="";
+  if(quoteItems.length===0){list.innerHTML='<p style="color:#888;text-align:center;padding:20px">No items added yet.</p>';return}
+  quoteItems.forEach(item=>{
+    const total=item.price*item.quantity,svc=services.find(s=>s.name===item.name);
+    const stockInfo=svc&&svc.stock!=="unlimited"?`<br><small style="color:#888">Stock: ${svc.stock}</small>`:'';
+    list.innerHTML+=`<div class="quote-item"><div><strong style="color:#39FF14">${item.name}</strong><br><small style="color:#888">R${item.price} x ${item.quantity}${stockInfo}</small></div><div class="text-right"><strong>R${total.toLocaleString()}</strong><br><button onclick="removeItem('${item.name}')" style="background:#ff4444;color:#fff;padding:3px 10px;font-size:12px;margin-top:5px;">Remove</button></div></div>`
+  });calculateTotal()
+}
+function removeItem(name){quoteItems=quoteItems.filter(i=>i.name!==name);renderQuote()}
+function clearQuote(){if(confirm("Clear all items?")){quoteItems=[];renderQuote();document.getElementById("additionalNotes").value=""}}
+function calculateTotal(){const t=quoteItems.reduce((s,i)=>s+i.price*i.quantity,0);document.getElementById("total").innerText="R"+t.toLocaleString(undefined,{minimumFractionDigits:2});return t}
+function saveTransaction(type,total,items){
+  const txn={id:"TXN-"+Date.now(),date:new Date().toISOString(),type:type,items:items.map(i=>({name:i.name,qty:i.quantity,price:i.price})),total,client:document.getElementById("clientName")?.value||"Walk-in",quoteRef};
+  const txns=loadTransactions();txns.push(txn);saveTransactions(txns);
+  if(type==="INVOICE")deductStock(items)
+}
+function deductStock(items){
+  items.forEach(it=>{const svc=services.find(s=>s.name===it.name);if(svc&&svc.type==="product"&&svc.stock!=="unlimited")svc.stock=Math.max(0,svc.stock-it.quantity)});
+  saveStockToStorage();renderQuote();populateDropdown()
+}
+function generateQuotePDF(){if(!quoteItems.length){alert("Add items first");return}saveTransaction("QUOTE",calculateTotal(),quoteItems);generateDocument("QUOTATION")}
+function generateInvoicePDF(){if(!quoteItems.length){alert("Add items first");return}saveTransaction("INVOICE",calculateTotal(),quoteItems);generateDocument("INVOICE");alert("✅ Invoice generated & stock updated!")}
+
+// ===== UNIVERSAL TOWN SEARCH =====
+function searchTowns() {
+  const searchTerm = document.getElementById('universalTownSearch').value.toLowerCase().trim();
+  const resultsDiv = document.getElementById('townSearchResults');
+  
+  if (searchTerm.length < 2) {
+    resultsDiv.style.display = 'none';
+    return;
+  }
+  
+  // Search through all towns
+  const matches = [];
+  for (const [province, towns] of Object.entries(SA_LOCATIONS)) {
+    towns.forEach(town => {
+      if (town.toLowerCase().includes(searchTerm)) {
+        const distance = DISTANCE_REFERENCE[town] || 'Unknown';
+        matches.push({
+          town: town,
+          province: province,
+          distance: distance,
+          coords: TOWN_COORDS[town]
+        });
+      }
+    });
+  }
+  
+  // Display results
+  if (matches.length > 0) {
+    resultsDiv.innerHTML = '';
+    matches.forEach(match => {
+      const div = document.createElement('div');
+      div.className = 'town-result-item';
+      div.innerHTML = `
+        <div>
+          <span class="town-result-name">${match.town}</span>
+          <br><span class="town-result-info">${match.province} • ${match.distance} km from Kimberley</span>
+        </div>
+        <span class="town-result-select">Select →</span>
+      `;
+      div.onclick = () => selectTownFromSearch(match);
+      resultsDiv.appendChild(div);
+    });
+    resultsDiv.style.display = 'block';
+  } else {
+    resultsDiv.innerHTML = '<div style="padding:15px;color:#888;text-align:center">No towns found</div>';
+    resultsDiv.style.display = 'block';
+  }
+}
+
+function selectTownFromSearch(match) {
+  // Set province
+  const provinceSelect = document.getElementById('deliveryProvince');
+  provinceSelect.value = match.province;
+  
+  // Trigger province change to populate towns
+  provinceSelect.dispatchEvent(new Event('change'));
+  
+  // Set town (with small delay to ensure dropdown is populated)
+  setTimeout(() => {
+    const townSelect = document.getElementById('deliveryTown');
+    townSelect.value = match.town;
+    townSelect.dispatchEvent(new Event('change'));
+    
+    // Clear search
+    document.getElementById('universalTownSearch').value = '';
+    document.getElementById('townSearchResults').style.display = 'none';
+    
+    // Show confirmation
+    alert(`✅ Selected: ${match.town}, ${match.province}\nDistance: ${match.distance} km from Kimberley`);
+  }, 100);
+}
+
+// Add live search as you type
+document.getElementById('universalTownSearch')?.addEventListener('input', function() {
+  if (this.value.length >= 2) {
+    searchTowns();
+  } else {
+    document.getElementById('townSearchResults').style.display = 'none';
+  }
+});
+
+// ===== PDF GENERATION - CENTERED LOGO + AUTOTABLE =====
+function generateDocument(type){
+  try{
+    if(!quoteItems.length){alert("Add items first");return}
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const totalAmount = calculateTotal();
+
+    const clientName = document.getElementById("clientName").value || "N/A";
+    const clientPhone = document.getElementById("clientPhone").value || "N/A";
+    const clientEmail = document.getElementById("clientEmail").value || "N/A";
+    const eventDate = document.getElementById("eventDate").value || "N/A";
+    const venue = document.getElementById("eventVenue").value || "N/A";
+
+    // ===== ADD WATERMARK (centered, semi-transparent) =====
+    if(watermarkDataUrl){
+      try{
+        const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight();
+        doc.addImage(watermarkDataUrl,"PNG",(pw-120)/2,(ph-120)/2,120,120,null,null,null,20);
+        console.log("✅ Watermark added to PDF");
+      }catch(e){
+        console.error("❌ Error adding watermark:",e);
+      }
+    }
+
+    // ===== HEADER =====
+    doc.setFontSize(20);
+    doc.setTextColor(57,255,20);
+    doc.text("7 Changes Enterprise", 14, 20);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0,0,0);
+    doc.text("Luxury Event Decor & Rentals",14,26);
+    doc.text("Phone: 076 113 5095",14,32);
+    doc.text("Email: angie@7changesenterprise.co.za",14,38);
+
+    // ===== ADD LOGO - CENTERED HORIZONTALLY =====
+    if(logoDataUrl){
+      try{
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const logoWidth = 60; // Wider when centered
+        const logoHeight = 30;
+        const logoX = (pageWidth - logoWidth) / 2; // Center horizontally
+        const logoY = 12; // Position at top
+        
+        doc.addImage(logoDataUrl,"PNG",logoX,logoY,logoWidth,logoHeight);
+        console.log("✅ Logo added to PDF (centered)");
+      }catch(e){
+        console.error("❌ Error adding logo:",e);
+      }
+    }
+
+    // ===== DOC INFO =====
+    doc.setFontSize(16);
+    doc.setTextColor(57,255,20);
+    doc.text(type, 200, 20, {align:"right"});
+
+    doc.setFontSize(10);
+    doc.setTextColor(0,0,0);
+    doc.text("Ref: " + quoteRef, 200, 28, {align:"right"});
+    doc.text("Date: " + new Date().toLocaleDateString('en-ZA'), 200, 34, {align:"right"});
+
+    // ===== CLIENT BOX (moved down for logo) =====
+    doc.setDrawColor(57,255,20);
+    doc.rect(14, 55, 182, 40); // y=55 to make space for centered logo
+
+    doc.setFontSize(11);
+    doc.setTextColor(57,255,20);
+    doc.text("CLIENT DETAILS",16,62);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0,0,0);
+    doc.text("Name: " + clientName,16,70);
+    doc.text("Phone: " + clientPhone,16,76);
+    doc.text("Email: " + clientEmail,16,82);
+    doc.text("Event Date: " + eventDate,110,70);
+    doc.text("Venue: " + venue,110,76);
+
+    // ===== TABLE DATA - USE CLEAN pdfName FOR DELIVERY ITEMS =====
+    const tableData = quoteItems.map(item => [
+      item.pdfName || item.name,  // ✅ Use clean name for PDF
+      item.quantity,
+      "R" + item.price.toLocaleString(),
+      "R" + (item.price * item.quantity).toLocaleString()
+    ]);
+
+    // ===== TABLE WITH AUTOTABLE =====
+    doc.autoTable({
+      startY: 105, // Moved down to y=105 for logo space
+      head: [["Item", "Qty", "Unit Price", "Total"]],
+      body: tableData,
+      theme: "grid",
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+        overflow: "linebreak"
+      },
+      headStyles: {
+        fillColor: [57,255,20],
+        textColor: [0,0,0],
+        fontStyle: "bold"
+      },
+      columnStyles: {
+        1: {halign: "right"},
+        2: {halign: "right"},
+        3: {halign: "right"}
+      }
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 10;
+
+    // ===== TOTAL =====
+    doc.setFontSize(11);
+    doc.setTextColor(0,0,0);
+    doc.text("Subtotal:", 140, finalY);
+    doc.text("R" + totalAmount.toLocaleString(undefined,{minimumFractionDigits:2}), 200, finalY, {align:"right"});
+
+    finalY += 8;
+
+    doc.setFontSize(14);
+    doc.setTextColor(57,255,20);
+    doc.setFont("helvetica","bold");
+    doc.text("TOTAL:", 140, finalY);
+    doc.text("R" + totalAmount.toLocaleString(undefined,{minimumFractionDigits:2}), 200, finalY, {align:"right"});
+
+    // ===== NOTES =====
+    const notes = document.getElementById("additionalNotes").value;
+    if(notes){
+      finalY += 15;
+
+      doc.setFontSize(11);
+      doc.setTextColor(57,255,20);
+      doc.text("Additional Notes:",14,finalY);
+
+      finalY += 6;
+
+      doc.setFontSize(9);
+      doc.setTextColor(0,0,0);
+
+      const noteLines = doc.splitTextToSize(notes,180);
+      noteLines.forEach(line=>{
+        doc.text(line,14,finalY);
+        finalY += 5;
+      });
+    }
+
+    // ===== PAYMENT =====
+    finalY += 15;
+
+    doc.setFontSize(11);
+    doc.setTextColor(57,255,20);
+    doc.text("Payment Details",14,finalY);
+
+    finalY += 6;
+
+    doc.setFontSize(9);
+    doc.setTextColor(0,0,0);
+
+    doc.text("Bank: First National Bank",14,finalY);
+    finalY += 5;
+    doc.text("Account Name: 7 Changes Enterprise",14,finalY);
+    finalY += 5;
+    doc.text("Account Number: 63113987870",14,finalY);
+
+    // ===== SAVE =====
+    const safeName = clientName.replace(/[^a-z0-9]/gi,'_');
+    doc.save(`${type}_${quoteRef}_${safeName}.pdf`);
+
+    alert(`✅ ${type} Generated!\nItems: ${quoteItems.length}`);
+
+  }catch(err){
+    console.error("PDF Generation Error:",err);
+    alert("❌ PDF Error: "+err.message);
+  }
+}
+
+function generateMonthlyReport(){
+  const txns=loadTransactions(),mth=prompt("Enter month (YYYY-MM, e.g., 2026-03):",new Date().toISOString().slice(0,7));
+  if(!mth||!/^\d{4}-\d{2}$/.test(mth)){alert("Use YYYY-MM format");return}
+  const mt=txns.filter(t=>t.type==="INVOICE"&&t.date.startsWith(mth));
+  if(!mt.length){alert(`No invoices for ${mth}`);return}
+  const stats={};mt.forEach(tx=>{tx.items.forEach(it=>{if(!stats[it.name])stats[it.name]={qty:0,revenue:0,cat:services.find(s=>s.name===it.name)?.category||"?"};stats[it.name].qty+=it.qty;stats[it.name].revenue+=it.qty*it.price})});
+  const top=Object.entries(stats).sort((a,b)=>b[1].qty-a[1].qty).slice(0,10),totalRev=mt.reduce((s,t)=>s+t.total,0);
+  let rpt=`📊 MONTHLY REPORT - ${mth}\n════════════════════\nInvoices: ${mt.length}\nRevenue: R${totalRev.toLocaleString()}\n\n🏆 TOP 10 ITEMS:\n─────────────────\n`;
+  top.forEach((x,i)=>rpt+=`${i+1}. ${x[0]}\n   ${x[1].cat} | Qty: ${x[1].qty} | R${x[1].revenue.toLocaleString()}\n\n`);
+  rpt+=`💡 PACKAGE IDEAS:\n─────────────────\n`;
+  const cats={};top.forEach(([n,d])=>{if(!cats[d.cat])cats[d.cat]=[];cats[d.cat].push(n)});
+  Object.entries(cats).forEach(([c,its])=>{if(its.length>=2)rpt+=`• "${c} Bundle": ${its.slice(0,3).join(" + ")}\n`});
+  navigator.clipboard.writeText(rpt).then(()=>alert("📋 Report copied to clipboard!")).catch(()=>alert(rpt));
+  if(confirm("Export as PDF?"))generateReportPDF(mth,top,totalRev,mt.length)
+}
+function generateReportPDF(mth,top,rev,count){
+  const{jsPDF}=window.jspdf,doc=new jsPDF();
+  doc.setFontSize(18);doc.setTextColor(57,255,20);doc.setFont("helvetica","bold");doc.text("7 Changes Enterprise - Monthly Report",15,20);
+  doc.setFontSize(12);doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");doc.text(`Period: ${mth}`,15,30);doc.text(`Generated: ${new Date().toLocaleDateString('en-ZA')}`,15,36);
+  doc.setFontSize(14);doc.setTextColor(57,255,20);doc.setFont("helvetica","bold");doc.text("Summary",15,50);
+  doc.setFontSize(10);doc.setTextColor(0,0,0);doc.text(`Invoices: ${count}`,15,58);doc.text(`Revenue: R${rev.toLocaleString()}`,15,64);
+  doc.setFontSize(14);doc.setTextColor(57,255,20);doc.setFont("helvetica","bold");doc.text("Top 10 Items",15,80);
+  doc.setFontSize(9);doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");
+  let y=88;top.forEach((x,i)=>{if(y>240){doc.addPage();y=20}doc.text(`${i+1}. ${x[0]} [${x[1].cat}]`,15,y);doc.text(`Qty: ${x[1].qty} | R${x[1].revenue.toLocaleString()}`,15,y+5);y+=12});
+  doc.save(`Report_${mth}.pdf`);alert("📄 PDF saved!")
+}
+function toggleAdminPanel(){
+  const p=document.getElementById('adminPanel'),o=document.getElementById('overlay');
+  if(p.style.display==='block'){p.style.display='none';o.style.display='none'}
+  else{p.style.display='block';o.style.display='block';updateLowStockAlert()}
+}
+function closeAllModals(){
+  document.getElementById('adminPanel').style.display='none';
+  document.getElementById('stockModal').style.display='none';
+  document.getElementById('adjustModal').style.display='none';
+  document.getElementById('overlay').style.display='none';
+}
+function viewStockLevels(){
+  const list=document.getElementById('stockList');list.innerHTML='';
+  const cats={};services.forEach(s=>{if(!cats[s.category])cats[s.category]=[];cats[s.category].push(s)});
+  Object.keys(cats).sort().forEach(cat=>{
+    const div=document.createElement('div');div.innerHTML=`<strong>${cat}</strong>`;
+    cats[cat].forEach(s=>{const st=s.stock==="unlimited"?"∞":s.stock,low=s.stock!=="unlimited"&&s.stock<10?'class="low-stock"':'';div.innerHTML+=`<div ${low}>• ${s.name}: ${st}</div>`});
+    list.appendChild(div)
+  });
+  document.getElementById('stockModal').style.display='block';document.getElementById('overlay').style.display='block';document.getElementById('adminPanel').style.display='none'
+}
+function closeStockModal(){document.getElementById('stockModal').style.display='none';document.getElementById('overlay').style.display='none'}
+function updateLowStockAlert(){
+  const alertBox=document.getElementById('lowStockAlert'),list=document.getElementById('lowStockList');
+  if(!alertBox||!list)return;
+  const low=services.filter(s=>s.type==="product"&&s.stock!=="unlimited"&&s.stock<=10&&s.stock>=0).sort((a,b)=>a.stock-b.stock);
+  if(!low.length){alertBox.style.display='none';return}
+  alertBox.style.display='block';
+  list.innerHTML=low.map(s=>`<div>• <strong>${s.name}</strong>: <span style="color:#ff6b6b;font-weight:bold">${s.stock}</span> <span style="color:#666;font-size:11px">[${s.category}]</span></div>`).join('');
+}
+function openStockAdjuster(){
+  const sel=document.getElementById('adjustItemSelect');sel.innerHTML='<option value="">-- Choose an item --</option>';
+  services.filter(s=>s.stock!=="unlimited").forEach(s=>{const opt=document.createElement('option');opt.value=s.name;opt.textContent=`${s.name} [${s.category}] - Current: ${s.stock}`;sel.appendChild(opt)});
+  document.getElementById('adjustCurrentStock').textContent='';document.getElementById('adjustNewCount').value='';document.getElementById('adjustReason').value='';
+  document.getElementById('adjustModal').style.display='block';document.getElementById('overlay').style.display='block';document.getElementById('adminPanel').style.display='none';
+  sel.onchange=function(){const svc=services.find(s=>s.name===this.value);if(svc){document.getElementById('adjustCurrentStock').textContent=`System count: ${svc.stock} | Category: ${svc.category}`;document.getElementById('adjustNewCount').placeholder=`Enter physical count (currently ${svc.stock})`}};
+  showRecentAdjustments()
+}
+function closeAdjustModal(){document.getElementById('adjustModal').style.display='none';document.getElementById('overlay').style.display='none'}
+function saveStockAdjustment(){
+  const name=document.getElementById('adjustItemSelect').value,newCnt=parseInt(document.getElementById('adjustNewCount').value),reason=document.getElementById('adjustReason').value.trim();
+  if(!name){alert("Select an item");return}if(isNaN(newCnt)||newCnt<0){alert("Enter valid count");return}
+  const svc=services.find(s=>s.name===name);if(!svc){alert("Item not found");return}
+  const old=svc.stock,diff=newCnt-old;svc.stock=newCnt;saveStockToStorage();
+  const log={date:new Date().toISOString(),item:name,oldStock:old,newStock:newCnt,difference:diff,reason:reason||"Manual adjustment",by:"Admin"};
+  const adj=loadAdjustments();adj.unshift(log);saveAdjustments(adj);
+  alert(`✅ Updated!\n${name}\n${old} → ${newCnt} (${diff>=0?'+':''}${diff})\nReason: ${reason||"N/A"}`);
+  renderQuote();populateDropdown();closeAdjustModal();showRecentAdjustments()
+}
+function showRecentAdjustments(){
+  const log=document.getElementById('adjustLog');
+  if(!log)return;
+  let adj=[];
+  try{adj=JSON.parse(localStorage.getItem('7CE_stock_adjustments')||"[]")}catch(e){console.warn("Adjustment log corrupted:",e);adj=[]}
+  const recent=adj.slice(0,5);
+  if(!recent.length){log.innerHTML='<em style="color:#666">No adjustments recorded yet</em>';return}
+  const items=recent.map(a=>{
+    let dateStr="Unknown";
+    if(a?.date){try{dateStr=new Date(a.date).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}catch(e){dateStr=a.date}}
+    const diff=(a.difference!==undefined)?(a.difference>=0?`+${a.difference}`:a.difference):`(${(a.newStock||0)-(a.oldStock||0)})`;
+    const item=a?.item||"Unknown item",reason=a?.reason?.trim()?a.reason:"No reason";
+    return `• <strong style="color:#39FF14">${dateStr}</strong>: ${item} <span style="color:#ff6b6b">${diff}</span> <em style="color:#888">(${reason})</em>`;
+  }).join('<br>');
+  log.innerHTML=`<strong style="color:#39FF14">Recent Adjustments:</strong><br><br>${items}`;
+}
+function viewAdjustmentHistory(){
+  const adj=loadAdjustments();if(!adj.length){alert("No adjustments recorded");return}
+  let rpt="📜 STOCK ADJUSTMENT HISTORY\n══════════════════════\n\n";
+  adj.forEach((a,i)=>{const d=new Date(a.date).toLocaleString('en-ZA'),diff=a.difference>=0?`+${a.difference}`:a.difference;rpt+=`${i+1}. ${d}\n   ${a.item}\n   ${a.oldStock} → ${a.newStock} (${diff})\n   Reason: ${a.reason}\n   By: ${a.by}\n\n`});
+  navigator.clipboard.writeText(rpt).then(()=>alert("📋 History copied!")).catch(()=>alert(rpt));
+  if(confirm("Export as PDF?"))exportAdjustmentPDF(adj)
+}
+function exportAdjustmentPDF(adj){
+  const{jsPDF}=window.jspdf,doc=new jsPDF();
+  doc.setFontSize(16);doc.setTextColor(57,255,20);doc.setFont("helvetica","bold");doc.text("Stock Adjustment Log",15,20);
+  doc.setFontSize(10);doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");doc.text(`Generated: ${new Date().toLocaleDateString('en-ZA')}`,15,30);
+  let y=40;adj.slice(0,20).forEach((a,i)=>{if(y>240){doc.addPage();y=20};const d=new Date(a.date).toLocaleDateString('en-ZA'),diff=a.difference>=0?`+${a.difference}`:a.difference;doc.setFontSize(9);doc.setFont("helvetica","bold");doc.text(`${i+1}. ${a.item}`,15,y);doc.setFont("helvetica","normal");doc.text(`${d} | ${a.oldStock}→${a.newStock}(${diff})`,15,y+5);doc.text(`Reason: ${a.reason}`,15,y+10);y+=18});
+  doc.save(`Adjustments_${new Date().toISOString().slice(0,10)}.pdf`);alert("📄 PDF saved!")}
+function exportAllData(){const d={stock:{},txns:loadTransactions(),adj:loadAdjustments(),date:new Date().toISOString()};services.forEach(s=>d.stock[s.name]=s.stock);const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`7CE_Backup_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);alert("✅ Backup downloaded!")}
+function importDataPrompt(){if(confirm("⚠️ Import will OVERWRITE current data. Continue?"))document.getElementById('importFile').click()}
+function handleFileImport(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.stock){services.forEach(s=>{if(d.stock[s.name]!==undefined)s.stock=d.stock[s.name]});saveStockToStorage()}if(d.txns)saveTransactions(d.txns);if(d.adj)saveAdjustments(d.adj);alert("✅ Data imported! Reloading...");location.reload()}catch(err){alert("❌ Import error: "+err.message)}};r.readAsText(f);e.target.value=''}
+function resetAllData(){if(confirm("⚠️ WARNING: Delete ALL data? This cannot be undone.")){localStorage.removeItem('7CE_stock');localStorage.removeItem('7CE_transactions');localStorage.removeItem('7CE_stock_adjustments');alert("✅ Reset complete. Reloading...");location.reload()}}
+let deliveryMap = null;
+function setupDeliveryCalculators() {
+  const provinceSelect = document.getElementById('deliveryProvince');
+  const townSelect = document.getElementById('deliveryTown');
+  const kmInput = document.getElementById('deliveryKm');
+  if (!provinceSelect || !townSelect || !kmInput) return;
+  provinceSelect.addEventListener('change', function() {
+    const province = this.value;
+    townSelect.innerHTML = '<option value="">-- Select Town/City --</option>';
+    if (province && SA_LOCATIONS[province]) {
+      townSelect.disabled = false;
+      townSelect.style.borderColor = '#ff9f43';
+      townSelect.style.color = '#fff';
+      SA_LOCATIONS[province].forEach(town => {
+        const opt = document.createElement('option');
+        opt.value = town;
+        opt.textContent = town;
+        townSelect.appendChild(opt);
+      });
+      const firstTown = SA_LOCATIONS[province][0];
+      kmInput.placeholder = DISTANCE_REFERENCE[firstTown] ? `e.g., ${DISTANCE_REFERENCE[firstTown]} km to ${firstTown}` : 'Enter distance in km';
+    } else {
+      townSelect.disabled = true;
+      townSelect.style.borderColor = '#444';
+      townSelect.style.color = '#888';
+    }
+    calculateDeliveryCost();
+    updateDeliveryMap();
+  });
+  townSelect.addEventListener('change', function() {
+    const town = this.value;
+    if (town && DISTANCE_REFERENCE[town] !== undefined) {
+      kmInput.value = DISTANCE_REFERENCE[town];
+      calculateDeliveryCost();
+    }
+    updateDeliveryMap();
+  });
+  kmInput.addEventListener('input', calculateDeliveryCost);
+  ['cfgFuelConsumption','cfgFuelPrice','cfgWearTear','cfgLabour','cfgRisk','cfgProfit'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input', calculateDeliveryCost);
+  });
+}
+
+// ===== UPDATED: Delivery Cost Calculator - ALL PROVINCES PAY (except Kimberley base) =====
+function calculateDeliveryCost() {
+  const province = document.getElementById('deliveryProvince').value;
+  const km = parseFloat(document.getElementById('deliveryKm').value) || 0;
+  
+  const fuelConsumption = parseFloat(document.getElementById('cfgFuelConsumption').value) || 11;
+  const fuelPrice = parseFloat(document.getElementById('cfgFuelPrice').value) || 28.50;
+  const wearTear = parseFloat(document.getElementById('cfgWearTear').value) || 2.50;
+  const labour = parseFloat(document.getElementById('cfgLabour').value) || 1000;
+  const risk = parseFloat(document.getElementById('cfgRisk').value) || 800;
+  const profit = parseFloat(document.getElementById('cfgProfit').value) || 3000;
+  
+  // ✅ ONLY KIMBERLEY (0 km) = No surcharge (local base)
+  if (km === 0) {
+    document.getElementById('deliveryTotal').textContent = 'R0.00 (Kimberley Base)';
+    document.getElementById('deliveryBreakdown').textContent = 'Kimberley location - No delivery surcharge';
+    return;
+  }
+  
+  if (!province || km <= 0) {
+    document.getElementById('deliveryTotal').textContent = 'R0.00';
+    document.getElementById('deliveryBreakdown').textContent = 'Enter distance to calculate costs';
+    return;
+  }
+  
+  // ✅ CALCULATE ROUND TRIP EXPLICITLY
+  const oneWay = km;
+  const roundTrip = km * 2;
+  
+  // Calculate each component
+  const fuelLitres = roundTrip / fuelConsumption;
+  const fuelCost = fuelLitres * fuelPrice;
+  const wearCost = roundTrip * wearTear;
+  const subtotal = fuelCost + wearCost + labour + risk;
+  const total = subtotal + profit;
+  
+  // ✅ CLEAR BREAKDOWN SHOWING ROUND TRIP FORMULA
+  const breakdown = `🚚 ONE-WAY: ${oneWay} km | ROUND TRIP: ${oneWay} × 2 = ${roundTrip} km
+⛽ FUEL: ${roundTrip} km ÷ ${fuelConsumption} L/100km = ${fuelLitres.toFixed(1)} L × R${fuelPrice} = R${fuelCost.toFixed(0)}
+🔧 WEAR & TEAR: ${roundTrip} km × R${wearTear}/km = R${wearCost.toFixed(0)}
+👷 LABOUR/TIME: R${labour}
+⚠️ RISK/LOADING: R${risk}
+💼 PROFIT MARGIN: R${profit}
+─────────────────────────────
+💰 TOTAL DELIVERY: R${total.toFixed(2).replace('.00','')}`;
+  
+  document.getElementById('deliveryTotal').textContent = 'R' + total.toFixed(2).replace('.00','');
+  document.getElementById('deliveryBreakdown').textContent = breakdown;
+}
+
+function updateDeliveryMap() {
+  const province = document.getElementById('deliveryProvince').value;
+  const town = document.getElementById('deliveryTown').value;
+  if (!deliveryMap) {
+    deliveryMap = L.map('deliveryMap').setView([-28.7282, 24.7499], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(deliveryMap);
+    L.marker([-28.7282, 24.7499]).addTo(deliveryMap).bindPopup('<b>7 Changes Enterprise</b><br>Kimberley, Northern Cape').openPopup();
+  }
+  deliveryMap.eachLayer(layer => {
+    if (layer instanceof L.Marker && layer.getPopup()?.getContent()?.includes('Destination')) {
+      deliveryMap.removeLayer(layer);
+    }
+  });
+  if (town && TOWN_COORDS[town]) {
+    const coords = TOWN_COORDS[town];
+    L.marker(coords).addTo(deliveryMap).bindPopup(`<b>Destination</b><br>${town}, ${province}`);
+    L.polyline([[-28.7282, 24.7499], coords], {color: '#ff9f43', dashArray: '5, 5'}).addTo(deliveryMap);
+    const bounds = L.latLngBounds([[-28.7282, 24.7499], coords]);
+    deliveryMap.fitBounds(bounds.pad(0.2));
+  }
+}
+function openDistanceHelper() {
+  const town = document.getElementById('deliveryTown').value;
+  const province = document.getElementById('deliveryProvince').value;
+  const address = document.getElementById('deliveryAddress').value;
+  
+  if (!town && !province) { 
+    alert('Select a province and town first, or enter a location name'); 
+    return; 
+  }
+  
+  const location = address || town || province || 'South Africa';
+  const query = `driving directions from Kimberley Northern Cape to ${location}`;
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  
+  if (confirm(`Open Google Maps to check ACTUAL distance from Kimberley to ${location}?`)) {
+    window.open(url, '_blank');
+    alert("💡 Tip: Note the km distance shown, then enter it manually in the distance field for accurate pricing.");
+  }
+}
+
+// ===== UPDATED: Add Delivery Cost - ALL PROVINCES PAY (except Kimberley base) =====
+function addDeliveryCost() {
+  const province = document.getElementById('deliveryProvince').value;
+  const town = document.getElementById('deliveryTown').value;
+  const address = document.getElementById('deliveryAddress').value;
+  const km = parseFloat(document.getElementById('deliveryKm').value) || 0;
+  
+  if (!province) { alert('Please select a province'); return; }
+  
+  // ✅ ONLY KIMBERLEY (0 km) = No surcharge
+  if (km === 0) {
+    alert('Kimberley is your base location - no delivery surcharge applies');
+    return;
+  }
+  
+  if (!km || km <= 0) { alert('Please enter a valid one-way distance in km'); return; }
+  
+  const fuelConsumption = parseFloat(document.getElementById('cfgFuelConsumption').value) || 11;
+  const fuelPrice = parseFloat(document.getElementById('cfgFuelPrice').value) || 28.50;
+  const wearTear = parseFloat(document.getElementById('cfgWearTear').value) || 2.50;
+  const labour = parseFloat(document.getElementById('cfgLabour').value) || 1000;
+  const risk = parseFloat(document.getElementById('cfgRisk').value) || 800;
+  const profit = parseFloat(document.getElementById('cfgProfit').value) || 3000;
+  
+  // ✅ CALCULATE ROUND TRIP EXPLICITLY
+  const oneWay = km;
+  const roundTrip = km * 2;
+  
+  const fuelLitres = roundTrip / fuelConsumption;
+  const fuelCost = fuelLitres * fuelPrice;
+  const wearCost = roundTrip * wearTear;
+  const subtotal = fuelCost + wearCost + labour + risk;
+  const total = subtotal + profit;
+  
+  const locationId = `${province}-${town || 'Unknown'}`;
+  const existing = quoteItems.find(i => i.isDeliveryCost && i.locationId === locationId);
+  if (existing) {
+    if (!confirm(`Delivery cost for ${town || province} already in quote. Replace?`)) return;
+    removeItem(existing.name);
+  }
+  
+  // ✅ CLEAN NAME FOR PDF (no bullet breakdown)
+  const pdfName = `Delivery Cost - ${province}${town ? ' (' + town + ')' : ''}${address ? ' | ' + address : ''}`;
+  
+  // Full name for UI display (with breakdown)
+  const uiName = `Delivery Cost - ${province}${town ? ' (' + town + ')' : ''} (${roundTrip} km round trip)
+• Fuel: ${fuelLitres.toFixed(1)}L × R${fuelPrice} = R${fuelCost.toFixed(0)}
+• Wear & Tear: ${roundTrip}km × R${wearTear} = R${wearCost.toFixed(0)}
+• Labour: R${labour} | Risk: R${risk} | Profit: R${profit}${address ? '\n• Venue: ' + address : ''}`;
+  
+  quoteItems.push({
+    name: uiName,        // Show breakdown in UI
+    pdfName: pdfName,    // Clean name for PDF
+    price: total,
+    quantity: 1,
+    category: 'Services',
+    isDeliveryCost: true,
+    locationId: locationId,
+    province: province,
+    town: town,
+    address: address,
+    km: roundTrip,
+    breakdown: {fuelCost, wearCost, labour, risk, profit, total}
+  });
+  
+  renderQuote();
+  
+  document.getElementById('deliveryProvince').value = '';
+  document.getElementById('deliveryTown').value = '';
+  document.getElementById('deliveryTown').disabled = true;
+  document.getElementById('deliveryTown').style.borderColor = '#444';
+  document.getElementById('deliveryTown').style.color = '#888';
+  document.getElementById('deliveryAddress').value = '';
+  document.getElementById('deliveryKm').value = '';
+  document.getElementById('deliveryTotal').textContent = 'R0.00';
+  document.getElementById('deliveryBreakdown').textContent = 'Enter distance to calculate costs';
+  
+  if (deliveryMap) {
+    deliveryMap.setView([-28.7282, 24.7499], 6);
+    deliveryMap.eachLayer(layer => {
+      if (layer instanceof L.Marker && layer.getPopup()?.getContent()?.includes('Destination')) {
+        deliveryMap.removeLayer(layer);
+      }
+    });
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  populateDropdown();
+  setupDeliveryCalculators();
+  setTimeout(updateDeliveryMap, 500);
+});
+</script>
+</body>
+</html>
