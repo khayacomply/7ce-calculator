@@ -301,7 +301,7 @@ let services = [
   {name:"Napkin Rings", price:5, category:"Event Decor", stock: 200, type:"product"},
   {name:"Table Number Holder", price:8, category:"Event Decor", stock: 80, type:"product"},
   {name:"Welcome Table", price:450, category:"Event Decor", stock: 10, type:"product"},
-  {name:"Main Table", price:450, category:"Event Decor", stock: 15, type:"product"}, // ✅ UPDATED: R300 → R450
+  {name:"Main Table", price:450, category:"Event Decor", stock: 15, type:"product"},
   {name:"Cocktail Table", price:80, category:"Event Decor", stock: 20, type:"product"},
   {name:"10 Seater Round Table", price:70, category:"Event Decor", stock: 25, type:"product"},
   {name:"8 Seater Long Table", price:120, category:"Event Decor", stock: 20, type:"product"},
@@ -318,7 +318,7 @@ let services = [
   {name:"Fancy Cocktail Glass", price:14, category:"Glassware", stock: 200, type:"product"},
   {name:"Normal Black Chair", price:7, category:"Chairs", stock: 200, type:"product"},
   {name:"Padded Chair", price:120, category:"Chairs", stock: 100, type:"product"},
-  {name:"Wimbledon/Tiffany/Spider Chair", price:40, category:"Chairs", stock: 360, type:"product"}, // ✅ STOCK UPDATED: 80 → 120 (price kept at R40)
+  {name:"Wimbledon/Tiffany/Spider Chair", price:40, category:"Chairs", stock: 360, type:"product"},
   {name:"His & Her Chairs", price:400, category:"Chairs", stock: 5, type:"product"},
   {name:"Kiddies Chairs", price:10, category:"Chairs", stock: 100, type:"product"},
   // ✅ NEW CHAIR SECTION ITEMS ADDED
@@ -339,8 +339,11 @@ let services = [
   {name:"Wedding Pic Board (1225x2450)", price:1600, category:"Decor", stock: 5, type:"product"},
   {name:"Backdrop", price:1200, category:"Decor", stock: 15, type:"product"},
   {name:"Kiddies Backdrop", price:650, category:"Decor", stock: 10, type:"product"},
-   {name:"Kiddies Theme Board", price:850, category:"Decor", stock: 8, type:"product"},
-   {name:"LED Angel Wings", price:400, category:"Decor", stock: 3, type:"product"},
+  {name:"Kiddies Theme Board", price:850, category:"Decor", stock: 8, type:"product"},
+  {name:"LED Angel Wings", price:400, category:"Decor", stock: 3, type:"product"},
+  // ✅ NEW LIGHTING/AMBIENCE ITEMS ADDED
+  {name:"Glass Candle Holder + Candle", price:200, category:"Decor", stock: 15, type:"product"},
+  {name:"Lamp Set of 3", price:350, category:"Decor", stock: 15, type:"product"},
   // ✅ UPDATED CARPET SECTION
   {name:"Black Carpet 10m", price:400, category:"Decor", stock: 6, type:"product"},
   {name:"White Floor 10m", price:400, category:"Decor", stock: 6, type:"product"},
@@ -369,14 +372,13 @@ let services = [
   {name:"Luxurious Car", price:2500, category:"Equipment", stock: 1, type:"product"},
   {name:"Drone (Video & Photos)", price:1500, category:"Equipment", stock: 2, type:"product"},
   {name:"Set Up", price:600, category:"Services", stock: "unlimited", type:"service"},
-   {name:"Set Up (Full Service)", price:3000, category:"Services", stock: "unlimited", type:"service"},
+  {name:"Set Up (Full Service)", price:3000, category:"Services", stock: "unlimited", type:"service"},
   {name:"Transport", price:300, category:"Services", stock: "unlimited", type:"service"},
   {name:"Transport (Long Distance)", price:800, category:"Services", stock: "unlimited", type:"service"},
   // ✅ UPDATED FUNERAL TENTS SECTION
   {name:"Funeral Tent 5x10", price:1000, category:"Tents", stock: 6, type:"product"},
   {name:"Funeral Tent 7x12", price:1200, category:"Tents", stock: 6, type:"product"}
 ];
-
 // ✅ UPDATED: All towns with accurate distances from Kimberley, Northern Cape
 const SA_LOCATIONS = {
   "Gauteng": ["Johannesburg", "Pretoria", "Soweto", "Sandton", "Midrand", "Centurion", "Benoni", "Boksburg", "Brakpan", "Germiston", "Kempton Park", "Springs", "Alberton", "Edenvale", "Bedfordview", "Randburg", "Roodepoort", "Vanderbijlpark", "Vereeniging", "Sebokeng"],
