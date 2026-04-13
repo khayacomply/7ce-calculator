@@ -122,6 +122,12 @@ button.danger:hover{background:#ff6666;}
 .town-result-name{color:#39FF14;font-weight:bold;}
 .town-result-info{color:#888;font-size:12px;}
 .town-result-select{color:#39FF14;font-weight:bold;}
+
+/* JSON Import/Export Styles */
+.json-actions{margin:15px 0;padding:12px;background:#1a1a2e;border:1px solid #39FF14;border-radius:6px;}
+.json-actions label{color:#39FF14;font-weight:bold;display:block;margin-bottom:8px;font-size:13px;}
+.json-actions button{margin-right:8px;margin-bottom:8px;}
+.json-hint{color:#888;font-size:11px;margin-top:6px;}
 </style>
 </head>
 <body>
@@ -145,6 +151,17 @@ button.danger:hover{background:#ff6666;}
     <label>Upload Watermark:</label>
     <input type="file" id="watermarkUpload" accept="image/*">
   </div>
+  
+  <!-- JSON Import/Export Section -->
+  <div class="json-actions">
+    <label>💾 Quote Data Management</label>
+    <button type="button" class="secondary" onclick="exportQuoteJSON()">📤 Export Quote JSON</button>
+    <button type="button" class="secondary" onclick="document.getElementById('importQuoteFile').click()">📥 Load Quote JSON</button>
+    <button type="button" onclick="convertToInvoice()">🔄 Convert to Invoice</button>
+    <input type="file" id="importQuoteFile" accept=".json" class="hidden" onchange="importQuoteJSON(event)">
+    <div class="json-hint">💡 Export saves current quote data. Load restores it. Convert changes quote → invoice with INV- reference.</div>
+  </div>
+  
   <div class="search-section">
     <label>Search or Select Products:</label>
     <div class="search-box">
@@ -263,8 +280,13 @@ button.danger:hover{background:#ff6666;}
   <button class="secondary" onclick="viewStockLevels()">📦 View Stock Levels</button>
   <button class="secondary" onclick="openStockAdjuster()">✏️ Adjust Stock (Manual)</button>
   <button class="secondary" onclick="viewAdjustmentHistory()">📜 Adjustment History</button>
-  <button class="secondary" onclick="exportAllData()">💾 Export Backup</button>
-  <button class="secondary" onclick="importDataPrompt()">📤 Import Backup</button>
+  <button class="secondary" onclick="exportAllData()">💾 Export Full Backup</button>
+  <button class="secondary" onclick="importDataPrompt()">📤 Import Full Backup</button>
+  <hr style="border-color:#333;margin:12px 0;">
+  <label style="color:#39FF14;font-size:12px;font-weight:bold;">Quote JSON Actions:</label>
+  <button class="secondary" onclick="exportQuoteJSON()">📤 Export Current Quote</button>
+  <button class="secondary" onclick="document.getElementById('importQuoteFile').click()">📥 Load Quote from JSON</button>
+  <button onclick="convertToInvoice()">🔄 Convert to Invoice</button>
   <button class="danger" onclick="resetAllData()">⚠️ Reset All Data</button>
   <button class="close-btn" onclick="toggleAdminPanel()">Close</button>
 </div>
@@ -289,10 +311,11 @@ button.danger:hover{background:#ff6666;}
   <div id="adjustLog"><em style="color:#666">No adjustments recorded yet</em></div>
 </div>
 <input type="file" id="importFile" accept=".json" class="hidden" onchange="handleFileImport(event)">
+<input type="file" id="importQuoteFile" accept=".json" class="hidden">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const BANKING_DETAILS={bank:"First National Bank",accountHolder:"7 Changes Enterprise",accountType:"Current Account",accountNumber:"63113987870",contactPerson:"Angie",phone:"076 113 5095",emailGeneral:"angie@7changesenterprise.co.za",emailQuotes:"quotes@7changesenterprise.co.za"};
-let quoteItems=[],quoteRef="",logoDataUrl=null,watermarkDataUrl=null;
+let quoteItems=[],quoteRef="",logoDataUrl=null,watermarkDataUrl=null,currentDocumentType="QUOTE";
 let services = [
   {name:"Centerpiece", price:50, category:"Event Decor", stock: 50, type:"product"},
   {name:"Napkins", price:10, category:"Event Decor", stock: 200, type:"product"},
@@ -456,6 +479,159 @@ function loadAdjustments(){return JSON.parse(localStorage.getItem('7CE_stock_adj
 function saveAdjustments(a){localStorage.setItem('7CE_stock_adjustments',JSON.stringify(a))}
 loadStockFromStorage();
 
+// ===== JSON EXPORT/IMPORT FUNCTIONS =====
+function exportQuoteJSON() {
+  if (!quoteItems.length && !document.getElementById('clientName').value) {
+    alert("⚠️ No quote data to export. Add client info or items first.");
+    return;
+  }
+  
+  const quoteData = {
+    documentType: currentDocumentType,
+    quoteRef: quoteRef || "QUO-" + Date.now().toString().slice(-6),
+    clientName: document.getElementById('clientName').value,
+    clientPhone: document.getElementById('clientPhone').value,
+    clientEmail: document.getElementById('clientEmail').value,
+    eventDate: document.getElementById('eventDate').value,
+    eventVenue: document.getElementById('eventVenue').value,
+    additionalNotes: document.getElementById('additionalNotes').value,
+    items: JSON.parse(JSON.stringify(quoteItems)), // deep copy
+    deliveryData: {
+      province: document.getElementById('deliveryProvince').value,
+      town: document.getElementById('deliveryTown').value,
+      address: document.getElementById('deliveryAddress').value,
+      km: document.getElementById('deliveryKm').value,
+      config: {
+        fuelConsumption: document.getElementById('cfgFuelConsumption').value,
+        fuelPrice: document.getElementById('cfgFuelPrice').value,
+        wearTear: document.getElementById('cfgWearTear').value,
+        labour: document.getElementById('cfgLabour').value,
+        risk: document.getElementById('cfgRisk').value,
+        profit: document.getElementById('cfgProfit').value
+      }
+    },
+    totals: {
+      subtotal: quoteItems.reduce((s,i)=>s+i.price*i.quantity,0),
+      vat: quoteItems.reduce((s,i)=>s+i.price*i.quantity,0) * 0.15,
+      total: calculateTotal()
+    },
+    createdDate: new Date().toISOString(),
+    logoDataUrl: logoDataUrl,
+    watermarkDataUrl: watermarkDataUrl
+  };
+  
+  const blob = new Blob([JSON.stringify(quoteData, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${quoteData.quoteRef}_Quote.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  alert("✅ Quote exported as JSON!");
+}
+
+function importQuoteJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      // Restore basic fields
+      if (data.quoteRef) { quoteRef = data.quoteRef; document.getElementById('quoteRef').value = quoteRef; }
+      if (data.clientName) document.getElementById('clientName').value = data.clientName;
+      if (data.clientPhone) document.getElementById('clientPhone').value = data.clientPhone;
+      if (data.clientEmail) document.getElementById('clientEmail').value = data.clientEmail;
+      if (data.eventDate) document.getElementById('eventDate').value = data.eventDate;
+      if (data.eventVenue) document.getElementById('eventVenue').value = data.eventVenue;
+      if (data.additionalNotes) document.getElementById('additionalNotes').value = data.additionalNotes;
+      
+      // Restore items
+      if (data.items && Array.isArray(data.items)) {
+        quoteItems = JSON.parse(JSON.stringify(data.items));
+        renderQuote();
+      }
+      
+      // Restore delivery data
+      if (data.deliveryData) {
+        const d = data.deliveryData;
+        if (d.province) document.getElementById('deliveryProvince').value = d.province;
+        if (d.town) {
+          // Trigger province change to populate towns first
+          document.getElementById('deliveryProvince').dispatchEvent(new Event('change'));
+          setTimeout(() => {
+            document.getElementById('deliveryTown').value = d.town;
+            document.getElementById('deliveryTown').dispatchEvent(new Event('change'));
+          }, 100);
+        }
+        if (d.address) document.getElementById('deliveryAddress').value = d.address;
+        if (d.km) document.getElementById('deliveryKm').value = d.km;
+        if (d.config) {
+          Object.keys(d.config).forEach(key => {
+            const el = document.getElementById('cfg' + key.charAt(0).toUpperCase() + key.slice(1));
+            if (el) el.value = d.config[key];
+          });
+        }
+        calculateDeliveryCost();
+      }
+      
+      // Restore images if present
+      if (data.logoDataUrl) logoDataUrl = data.logoDataUrl;
+      if (data.watermarkDataUrl) watermarkDataUrl = data.watermarkDataUrl;
+      
+      // Set document type
+      currentDocumentType = data.documentType || "QUOTE";
+      
+      alert(`✅ Quote loaded: ${data.quoteRef}\nItems: ${data.items?.length || 0}\nType: ${currentDocumentType}`);
+      
+    } catch (err) {
+      alert("❌ Error loading JSON: " + err.message);
+      console.error("Import error:", err);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // reset input
+}
+
+function convertToInvoice() {
+  if (!quoteItems.length) {
+    alert("⚠️ Add items to quote first before converting to invoice.");
+    return;
+  }
+  
+  if (!confirm("Convert this quote to an invoice?\n\n• Reference will change to INV- format\n• Due date will be set to 30 days\n• PDF will show 'TAX INVOICE' header\n\nContinue?")) {
+    return;
+  }
+  
+  // Generate invoice reference
+  const invRef = "INV-" + Date.now().toString().slice(-6);
+  quoteRef = invRef;
+  document.getElementById('quoteRef').value = invRef;
+  
+  // Set due date (30 days from now)
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 30);
+  const dueDateStr = dueDate.toISOString().slice(0,10);
+  
+  // Update document type
+  currentDocumentType = "INVOICE";
+  
+  // Add invoice-specific note if not present
+  const notesEl = document.getElementById('additionalNotes');
+  if (!notesEl.value.includes("Payment Terms")) {
+    notesEl.value += (notesEl.value ? "\n\n" : "") + "Payment Terms: Due within 30 days. EFT preferred. Reference: " + invRef;
+  }
+  
+  alert(`✅ Converted to Invoice!\nReference: ${invRef}\nDue Date: ${dueDateStr}\n\nGenerate PDF to send to client.`);
+  
+  // Auto-generate invoice PDF
+  generateDocument("INVOICE", dueDateStr);
+}
+
+// ===== END JSON FUNCTIONS =====
+
 document.getElementById("logoUpload").addEventListener("change",function(e){
   if(e.target.files && e.target.files[0]){
     const reader=new FileReader();
@@ -591,8 +767,8 @@ document.getElementById('universalTownSearch')?.addEventListener('input', functi
   if (this.value.length >= 2) { searchTowns(); } else { document.getElementById('townSearchResults').style.display = 'none'; }
 });
 
-// ===== PDF GENERATION - USER PROVIDED CODE =====
-function generateDocument(type) {
+// ===== PDF GENERATION - UPDATED FOR INVOICE MODE =====
+function generateDocument(type, dueDateOverride) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
@@ -644,6 +820,11 @@ function generateDocument(type) {
     doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 70, 24);
     doc.text(`Type: ${type}`, pageWidth - 70, 30);
 
+    // Add due date for invoices
+    if (type === "INVOICE" && dueDateOverride) {
+      doc.text(`Due: ${dueDateOverride}`, pageWidth - 70, 36);
+    }
+
     doc.setDrawColor(...lime);
     doc.line(14, 34, pageWidth - 14, 34);
   }
@@ -674,7 +855,7 @@ function generateDocument(type) {
 
     head: [['Item', 'Qty', 'Unit Price', 'Total']],
     body: quoteItems.map(item => [
-      item.name,
+      item.pdfName || item.name, // Use pdfName if available (for delivery items)
       item.quantity,
       "R" + item.price,
       "R" + (item.price * item.quantity)
@@ -752,6 +933,32 @@ function generateDocument(type) {
   doc.text(`Bank: ${BANKING_DETAILS.bank}`, 14, bankY + 6);
   doc.text(`Account: ${BANKING_DETAILS.accountHolder}`, 14, bankY + 12);
   doc.text(`Acc No: ${BANKING_DETAILS.accountNumber}`, 14, bankY + 18);
+  doc.text(`Contact: ${BANKING_DETAILS.contactPerson} - ${BANKING_DETAILS.phone}`, 14, bankY + 24);
+
+  // 📝 NOTES/TERMS
+  const notes = document.getElementById('additionalNotes').value;
+  if (notes) {
+    bankY += 35;
+    doc.setTextColor(...lime);
+    doc.setFontSize(11);
+    doc.text("NOTES / TERMS", 14, bankY);
+    doc.setTextColor(180, 180, 180);
+    doc.setFontSize(9);
+    
+    // Split notes into lines for PDF
+    const lines = notes.split('\n');
+    let noteY = bankY + 6;
+    lines.forEach(line => {
+      if (noteY > pageHeight - 40) {
+        doc.addPage();
+        drawBackground();
+        drawHeader();
+        noteY = 70;
+      }
+      doc.text(line, 14, noteY);
+      noteY += 5;
+    });
+  }
 
   // 🧾 FOOTER
   const pageCount = doc.internal.getNumberOfPages();
