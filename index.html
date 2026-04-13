@@ -128,6 +128,14 @@ button.danger:hover{background:#ff6666;}
 .json-actions label{color:#39FF14;font-weight:bold;display:block;margin-bottom:8px;font-size:13px;}
 .json-actions button{margin-right:8px;margin-bottom:8px;}
 .json-hint{color:#888;font-size:11px;margin-top:6px;}
+
+/* Auto-Calculate Button Styles */
+.auto-calc-row{display:flex;gap:5px;align-items:center;margin:8px 0;}
+.auto-calc-btn{background:#00bcd4;color:#000;padding:8px 12px;border:none;border-radius:4px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.auto-calc-btn:hover{background:#0097a7;}
+.auto-calc-btn:disabled{background:#444;color:#888;cursor:not-allowed;}
+.distance-status{font-size:11px;color:#888;margin-left:8px;}
+.distance-status.calculated{color:#39FF14;}
 </style>
 </head>
 <body>
@@ -188,6 +196,11 @@ button.danger:hover{background:#ff6666;}
   
   <div class="delivery-section">
     <label>🚚 Transport and Logistics</label>
+    <div style="background:#1a1a2e;padding:10px;border-radius:4px;margin-bottom:12px;border:1px solid #39FF14;">
+      <small style="color:#39FF14;font-weight:bold;">📍 Business Origin:</small><br>
+      <small style="color:#aaa;">21 7th Street, Homevale, Kimberley, 8301, Northern Cape</small>
+    </div>
+    
     <div class="delivery-grid">
       <div>
         <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Province</label>
@@ -211,11 +224,13 @@ button.danger:hover{background:#ff6666;}
         </select>
       </div>
     </div>
+    
     <div style="margin-bottom:10px;">
       <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Venue Address (Optional)</label>
       <input type="text" id="deliveryAddress" placeholder="e.g., Sandton Convention Centre, 15 Maude Street" style="width:100%;padding:10px;background:#000;border:1px solid #ff9f43;color:#fff;border-radius:4px;font-size:13px;box-sizing:border-box;">
-      <small class="delivery-note">* For record keeping only</small>
+      <small class="delivery-note">* For record keeping and precise distance calculation</small>
     </div>
+    
     <div class="delivery-config">
       <label>🚚 Vehicle Settings (Edit as needed):</label>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;">
@@ -229,23 +244,32 @@ button.danger:hover{background:#ff6666;}
         <div><label>Profit Margin (R)</label><input type="number" id="cfgProfit" value="3000" min="0"></div>
       </div>
     </div>
+    
     <div style="margin-bottom:10px;">
-      <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">One-Way Distance from Kimberley (km)</label>
-      <div style="display:flex;gap:5px;">
-        <input type="number" id="deliveryKm" placeholder="Enter distance in km" min="0" style="flex:1;padding:10px;background:#000;border:1px solid #ff9f43;color:#fff;border-radius:4px;font-size:13px;box-sizing:border-box;">
-        <button type="button" class="delivery-helper-btn" onclick="openDistanceHelper()" title="Open Google Maps to check distance">🔍</button>
+      <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">One-Way Distance from Business (km)</label>
+      <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+        <input type="number" id="deliveryKm" placeholder="Enter distance or auto-calculate" min="0" style="flex:1;min-width:150px;padding:10px;background:#000;border:1px solid #ff9f43;color:#fff;border-radius:4px;font-size:13px;box-sizing:border-box;">
+        <button type="button" class="auto-calc-btn" id="autoCalcBtn" onclick="autoCalculateDistance()">
+          🔄 Auto-Calculate
+        </button>
+        <button type="button" class="delivery-helper-btn" onclick="openDistanceHelper()" title="Open Google Maps to verify distance">🗺️ Verify</button>
+        <span class="distance-status" id="distanceStatus"></span>
       </div>
     </div>
+    
     <div class="delivery-cost-box">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="color:#888;font-size:12px;">💰 TOTAL CHARGE TO CLIENT:</span>
         <span class="cost" id="deliveryTotal">R0.00</span>
       </div>
-      <div class="breakdown" id="deliveryBreakdown">Enter distance to calculate costs</div>
+      <div class="breakdown" id="deliveryBreakdown">Select destination and calculate distance</div>
     </div>
-    <small class="delivery-note">⚠️ Northern Cape (Kimberley base) = Local delivery (no surcharge for Kimberley only)</small>
+    
+    <small class="delivery-note">💡 Distances calculate from 21 7th Street, Homevale, Kimberley. Use Auto-Calculate for estimates or enter exact km.</small>
     <button type="button" class="delivery-btn" onclick="addDeliveryCost()">+ Add Delivery Cost to Quote</button>
+    
     <div class="delivery-map"><div id="deliveryMap"></div></div>
+    
     <div class="ref-table">
       <details>
         <summary>📍 Reference Distances from Kimberley (One-Way)</summary>
@@ -263,6 +287,7 @@ button.danger:hover{background:#ff6666;}
       </details>
     </div>
   </div>
+  
   <div id="quoteItemsList"></div>
   <div class="total">TOTAL: <span id="total">R0.00</span></div>
   <div class="actions">
@@ -271,6 +296,7 @@ button.danger:hover{background:#ff6666;}
     <button class="secondary" onclick="clearQuote()">Clear All</button>
   </div>
 </div>
+
 <button class="admin-btn" onclick="toggleAdminPanel()">⚙️ Admin Panel</button>
 <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
 <div class="admin-panel" id="adminPanel">
@@ -290,11 +316,13 @@ button.danger:hover{background:#ff6666;}
   <button class="danger" onclick="resetAllData()">⚠️ Reset All Data</button>
   <button class="close-btn" onclick="toggleAdminPanel()">Close</button>
 </div>
+
 <div class="stock-modal" id="stockModal">
   <h3>📦 Current Stock Levels</h3>
   <div class="stock-list" id="stockList"></div>
   <button class="modal-close" onclick="closeStockModal()">Close</button>
 </div>
+
 <div class="adjust-modal" id="adjustModal">
   <h3>✏️ Adjust Stock Level</h3>
   <label>Select Item:</label>
@@ -310,10 +338,19 @@ button.danger:hover{background:#ff6666;}
   </div>
   <div id="adjustLog"><em style="color:#666">No adjustments recorded yet</em></div>
 </div>
+
 <input type="file" id="importFile" accept=".json" class="hidden" onchange="handleFileImport(event)">
 <input type="file" id="importQuoteFile" accept=".json" class="hidden">
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ===== BUSINESS ORIGIN CONFIG =====
+const BUSINESS_ORIGIN = {
+  address: "21 7th Street, Homevale, Kimberley, 8301, Northern Cape, South Africa",
+  coords: [-28.7647, 24.7624], // Homevale, Kimberley approximate coordinates
+  name: "7 Changes Enterprise HQ"
+};
+
 const BANKING_DETAILS={bank:"First National Bank",accountHolder:"7 Changes Enterprise",accountType:"Current Account",accountNumber:"63113987870",contactPerson:"Angie",phone:"076 113 5095",emailGeneral:"angie@7changesenterprise.co.za",emailQuotes:"quotes@7changesenterprise.co.za"};
 let quoteItems=[],quoteRef="",logoDataUrl=null,watermarkDataUrl=null,currentDocumentType="QUOTE";
 let services = [
@@ -471,6 +508,86 @@ const DISTANCE_REFERENCE = {
   "Knysna": 990, "Oudtshoorn": 870, "Hermanus": 1080, "Somerset West": 1045
 };
 
+// ===== HAVERSINE FORMULA FOR DISTANCE CALCULATION =====
+function toRad(deg) { return deg * Math.PI / 180; }
+
+function haversineDistance(coord1, coord2) {
+  const R = 6371; // Earth's radius in km
+  const dLat = toRad(coord2[0] - coord1[0]);
+  const dLon = toRad(coord2[1] - coord1[1]);
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(toRad(coord1[0])) * Math.cos(toRad(coord2[0])) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return Math.round(R * c);
+}
+
+// ===== AUTO-CALCULATE DISTANCE FUNCTION =====
+async function autoCalculateDistance() {
+  const btn = document.getElementById('autoCalcBtn');
+  const status = document.getElementById('distanceStatus');
+  const province = document.getElementById('deliveryProvince').value;
+  const town = document.getElementById('deliveryTown').value;
+  const address = document.getElementById('deliveryAddress').value.trim();
+  
+  if (!province) {
+    alert('Please select a province first');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Calculating...';
+  status.textContent = '';
+  status.className = 'distance-status';
+  
+  try {
+    let destCoords = null;
+    let destName = town || province;
+    
+    // Try to get coordinates from our lookup table first
+    if (town && TOWN_COORDS[town]) {
+      destCoords = TOWN_COORDS[town];
+    }
+    
+    // If no coords found, use province center as fallback
+    if (!destCoords && province) {
+      // Use first town in province as approximate center
+      const firstTown = SA_LOCATIONS[province]?.[0];
+      if (firstTown && TOWN_COORDS[firstTown]) {
+        destCoords = TOWN_COORDS[firstTown];
+        destName = `${firstTown} area, ${province}`;
+      }
+    }
+    
+    if (destCoords) {
+      // Calculate distance using Haversine formula
+      const distance = haversineDistance(BUSINESS_ORIGIN.coords, destCoords);
+      document.getElementById('deliveryKm').value = distance;
+      
+      // Update status
+      status.textContent = `✓ ~${distance} km (straight-line estimate)`;
+      status.className = 'distance-status calculated';
+      
+      // Recalculate delivery cost
+      calculateDeliveryCost();
+      
+      alert(`📍 Estimated distance to ${destName}: ${distance} km\n\n💡 This is a straight-line estimate. Click "🗺️ Verify" for precise driving distance.`);
+    } else {
+      status.textContent = '⚠️ No coordinates found';
+      status.style.color = '#ff6b6b';
+      alert(`Could not find coordinates for ${town || province}. Please enter distance manually or use the Verify button.`);
+    }
+  } catch (err) {
+    console.error('Auto-calc error:', err);
+    status.textContent = '❌ Error';
+    status.style.color = '#ff6b6b';
+    alert('Error calculating distance. Please enter manually.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔄 Auto-Calculate';
+  }
+}
+
 function loadStockFromStorage(){const s=localStorage.getItem('7CE_stock');if(s){try{const d=JSON.parse(s);services.forEach(x=>{if(d[x.name]!==undefined)x.stock=d[x.name]})}catch(e){console.error("Stock load error:",e)}}}
 function saveStockToStorage(){const d={};services.forEach(x=>d[x.name]=x.stock);localStorage.setItem('7CE_stock',JSON.stringify(d))}
 function loadTransactions(){return JSON.parse(localStorage.getItem('7CE_transactions')||"[]")}
@@ -495,7 +612,7 @@ function exportQuoteJSON() {
     eventDate: document.getElementById('eventDate').value,
     eventVenue: document.getElementById('eventVenue').value,
     additionalNotes: document.getElementById('additionalNotes').value,
-    items: JSON.parse(JSON.stringify(quoteItems)), // deep copy
+    items: JSON.parse(JSON.stringify(quoteItems)),
     deliveryData: {
       province: document.getElementById('deliveryProvince').value,
       town: document.getElementById('deliveryTown').value,
@@ -539,7 +656,6 @@ function importQuoteJSON(event) {
     try {
       const data = JSON.parse(e.target.result);
       
-      // Restore basic fields
       if (data.quoteRef) { quoteRef = data.quoteRef; document.getElementById('quoteRef').value = quoteRef; }
       if (data.clientName) document.getElementById('clientName').value = data.clientName;
       if (data.clientPhone) document.getElementById('clientPhone').value = data.clientPhone;
@@ -548,18 +664,15 @@ function importQuoteJSON(event) {
       if (data.eventVenue) document.getElementById('eventVenue').value = data.eventVenue;
       if (data.additionalNotes) document.getElementById('additionalNotes').value = data.additionalNotes;
       
-      // Restore items
       if (data.items && Array.isArray(data.items)) {
         quoteItems = JSON.parse(JSON.stringify(data.items));
         renderQuote();
       }
       
-      // Restore delivery data
       if (data.deliveryData) {
         const d = data.deliveryData;
         if (d.province) document.getElementById('deliveryProvince').value = d.province;
         if (d.town) {
-          // Trigger province change to populate towns first
           document.getElementById('deliveryProvince').dispatchEvent(new Event('change'));
           setTimeout(() => {
             document.getElementById('deliveryTown').value = d.town;
@@ -577,11 +690,9 @@ function importQuoteJSON(event) {
         calculateDeliveryCost();
       }
       
-      // Restore images if present
       if (data.logoDataUrl) logoDataUrl = data.logoDataUrl;
       if (data.watermarkDataUrl) watermarkDataUrl = data.watermarkDataUrl;
       
-      // Set document type
       currentDocumentType = data.documentType || "QUOTE";
       
       alert(`✅ Quote loaded: ${data.quoteRef}\nItems: ${data.items?.length || 0}\nType: ${currentDocumentType}`);
@@ -592,7 +703,7 @@ function importQuoteJSON(event) {
     }
   };
   reader.readAsText(file);
-  event.target.value = ''; // reset input
+  event.target.value = '';
 }
 
 function convertToInvoice() {
@@ -605,20 +716,16 @@ function convertToInvoice() {
     return;
   }
   
-  // Generate invoice reference
   const invRef = "INV-" + Date.now().toString().slice(-6);
   quoteRef = invRef;
   document.getElementById('quoteRef').value = invRef;
   
-  // Set due date (30 days from now)
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + 30);
   const dueDateStr = dueDate.toISOString().slice(0,10);
   
-  // Update document type
   currentDocumentType = "INVOICE";
   
-  // Add invoice-specific note if not present
   const notesEl = document.getElementById('additionalNotes');
   if (!notesEl.value.includes("Payment Terms")) {
     notesEl.value += (notesEl.value ? "\n\n" : "") + "Payment Terms: Due within 30 days. EFT preferred. Reference: " + invRef;
@@ -626,7 +733,6 @@ function convertToInvoice() {
   
   alert(`✅ Converted to Invoice!\nReference: ${invRef}\nDue Date: ${dueDateStr}\n\nGenerate PDF to send to client.`);
   
-  // Auto-generate invoice PDF
   generateDocument("INVOICE", dueDateStr);
 }
 
@@ -767,7 +873,7 @@ document.getElementById('universalTownSearch')?.addEventListener('input', functi
   if (this.value.length >= 2) { searchTowns(); } else { document.getElementById('townSearchResults').style.display = 'none'; }
 });
 
-// ===== PDF GENERATION - UPDATED FOR INVOICE MODE =====
+// ===== PDF GENERATION =====
 function generateDocument(type, dueDateOverride) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -778,115 +884,66 @@ function generateDocument(type, dueDateOverride) {
   const lime = [57, 255, 20];
   const dark = [15, 15, 15];
 
-  // 🧱 BACKGROUND
   function drawBackground() {
     doc.setFillColor(...dark);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
-
-    // Watermark image
     if (watermarkDataUrl) {
       doc.setGState(new doc.GState({ opacity: 0.08 }));
       doc.addImage(watermarkDataUrl, "PNG", pageWidth / 2 - 50, pageHeight / 2 - 50, 100, 100);
       doc.setGState(new doc.GState({ opacity: 1 }));
     }
-
-    // 🔥 BIG TYPE STAMP
     doc.setGState(new doc.GState({ opacity: 0.05 }));
     doc.setTextColor(...lime);
     doc.setFontSize(80);
-    doc.text(type, pageWidth / 2, pageHeight / 2, {
-      angle: 45,
-      align: "center"
-    });
+    doc.text(type, pageWidth / 2, pageHeight / 2, { angle: 45, align: "center" });
     doc.setGState(new doc.GState({ opacity: 1 }));
   }
 
-  // 🟢 HEADER
   function drawHeader() {
-    if (logoDataUrl) {
-      doc.addImage(logoDataUrl, "PNG", 14, 12, 30, 15);
-    }
-
+    if (logoDataUrl) doc.addImage(logoDataUrl, "PNG", 14, 12, 30, 15);
     doc.setTextColor(...lime);
     doc.setFontSize(18);
     doc.text("7 Changes Enterprise", 50, 18);
-
     doc.setFontSize(10);
     doc.setTextColor(180, 180, 180);
     doc.text("Luxury Event Decor & Rentals", 50, 24);
-
     doc.setFontSize(9);
     doc.text(`Ref: ${quoteRef}`, pageWidth - 70, 18);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 70, 24);
     doc.text(`Type: ${type}`, pageWidth - 70, 30);
-
-    // Add due date for invoices
-    if (type === "INVOICE" && dueDateOverride) {
-      doc.text(`Due: ${dueDateOverride}`, pageWidth - 70, 36);
-    }
-
+    if (type === "INVOICE" && dueDateOverride) doc.text(`Due: ${dueDateOverride}`, pageWidth - 70, 36);
     doc.setDrawColor(...lime);
     doc.line(14, 34, pageWidth - 14, 34);
   }
 
-  // FIRST PAGE
   drawBackground();
   drawHeader();
 
-  // 👤 CLIENT
   doc.setTextColor(...lime);
   doc.setFontSize(12);
   doc.text("CLIENT DETAILS", 14, 45);
-
   doc.setTextColor(220, 220, 220);
   doc.setFontSize(10);
-
   doc.text(`Name: ${document.getElementById("clientName").value}`, 14, 52);
   doc.text(`Phone: ${document.getElementById("clientPhone").value}`, 14, 58);
   doc.text(`Email: ${document.getElementById("clientEmail").value}`, 14, 64);
   doc.text(`Event Date: ${document.getElementById("eventDate").value}`, 90, 52);
   doc.text(`Venue: ${document.getElementById("eventVenue").value}`, 90, 58);
 
-  // 📦 TABLE (FIXED)
   doc.autoTable({
     startY: 75,
     margin: { top: 75, bottom: 25 },
     pageBreak: 'auto',
-
     head: [['Item', 'Qty', 'Unit Price', 'Total']],
-    body: quoteItems.map(item => [
-      item.pdfName || item.name, // Use pdfName if available (for delivery items)
-      item.quantity,
-      "R" + item.price,
-      "R" + (item.price * item.quantity)
-    ]),
-
+    body: quoteItems.map(item => [item.pdfName || item.name, item.quantity, "R" + item.price, "R" + (item.price * item.quantity)]),
     theme: 'grid',
-
-    styles: {
-      fillColor: [25, 25, 25],
-      textColor: [220, 220, 220],
-      lineColor: lime,
-      lineWidth: 0.2,
-      fontSize: 9
-    },
-
-    headStyles: {
-      fillColor: lime,
-      textColor: [0, 0, 0],
-      fontStyle: 'bold'
-    },
-
-    alternateRowStyles: {
-      fillColor: [20, 20, 20]
-    },
-
-    // ✅ FIX: draw background ONLY when page starts
+    styles: { fillColor: [25, 25, 25], textColor: [220, 220, 220], lineColor: lime, lineWidth: 0.2, fontSize: 9 },
+    headStyles: { fillColor: lime, textColor: [0, 0, 0], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [20, 20, 20] },
     didDrawPage: function (data) {
       if (data.pageNumber > 1) {
         drawBackground();
         drawHeader();
-
         doc.setFontSize(10);
         doc.setTextColor(150, 150, 150);
         doc.text("Items Continued...", 14, 70);
@@ -895,8 +952,6 @@ function generateDocument(type, dueDateOverride) {
   });
 
   let finalY = doc.lastAutoTable.finalY || 80;
-
-  // 🚨 PAGE BREAK FOR TOTAL
   if (finalY > 230) {
     doc.addPage();
     drawBackground();
@@ -904,30 +959,20 @@ function generateDocument(type, dueDateOverride) {
     finalY = 70;
   }
 
-  // 💰 TOTAL
   doc.setDrawColor(...lime);
   doc.setFillColor(25, 25, 25);
   doc.rect(120, finalY + 10, 70, 22, 'FD');
-
   doc.setTextColor(...lime);
   doc.setFontSize(11);
   doc.text("TOTAL", 125, finalY + 18);
-
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(14);
-  doc.text(
-    "R" + calculateTotal().toLocaleString(undefined, { minimumFractionDigits: 2 }),
-    125,
-    finalY + 27
-  );
+  doc.text("R" + calculateTotal().toLocaleString(undefined, { minimumFractionDigits: 2 }), 125, finalY + 27);
 
-  // 🏦 PAYMENT
   let bankY = finalY + 40;
-
   doc.setTextColor(...lime);
   doc.setFontSize(11);
   doc.text("PAYMENT DETAILS", 14, bankY);
-
   doc.setTextColor(200, 200, 200);
   doc.setFontSize(10);
   doc.text(`Bank: ${BANKING_DETAILS.bank}`, 14, bankY + 6);
@@ -935,7 +980,6 @@ function generateDocument(type, dueDateOverride) {
   doc.text(`Acc No: ${BANKING_DETAILS.accountNumber}`, 14, bankY + 18);
   doc.text(`Contact: ${BANKING_DETAILS.contactPerson} - ${BANKING_DETAILS.phone}`, 14, bankY + 24);
 
-  // 📝 NOTES/TERMS
   const notes = document.getElementById('additionalNotes').value;
   if (notes) {
     bankY += 35;
@@ -944,8 +988,6 @@ function generateDocument(type, dueDateOverride) {
     doc.text("NOTES / TERMS", 14, bankY);
     doc.setTextColor(180, 180, 180);
     doc.setFontSize(9);
-    
-    // Split notes into lines for PDF
     const lines = notes.split('\n');
     let noteY = bankY + 6;
     lines.forEach(line => {
@@ -960,9 +1002,7 @@ function generateDocument(type, dueDateOverride) {
     });
   }
 
-  // 🧾 FOOTER
   const pageCount = doc.internal.getNumberOfPages();
-
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
@@ -1124,6 +1164,7 @@ function setupDeliveryCalculators() {
   });
 }
 
+// ✅ UPDATED: Calculate delivery cost from business origin to ANY location
 function calculateDeliveryCost() {
   const province = document.getElementById('deliveryProvince').value;
   const km = parseFloat(document.getElementById('deliveryKm').value) || 0;
@@ -1133,16 +1174,14 @@ function calculateDeliveryCost() {
   const labour = parseFloat(document.getElementById('cfgLabour').value) || 1000;
   const risk = parseFloat(document.getElementById('cfgRisk').value) || 800;
   const profit = parseFloat(document.getElementById('cfgProfit').value) || 3000;
-  if (km === 0) {
-    document.getElementById('deliveryTotal').textContent = 'R0.00 (Kimberley Base)';
-    document.getElementById('deliveryBreakdown').textContent = 'Kimberley location - No delivery surcharge';
-    return;
-  }
+  
+  // All locations including Kimberley now charged based on distance
   if (!province || km <= 0) {
     document.getElementById('deliveryTotal').textContent = 'R0.00';
-    document.getElementById('deliveryBreakdown').textContent = 'Enter distance to calculate costs';
+    document.getElementById('deliveryBreakdown').textContent = 'Select destination and calculate distance';
     return;
   }
+  
   const oneWay = km;
   const roundTrip = km * 2;
   const fuelLitres = roundTrip / fuelConsumption;
@@ -1150,7 +1189,9 @@ function calculateDeliveryCost() {
   const wearCost = roundTrip * wearTear;
   const subtotal = fuelCost + wearCost + labour + risk;
   const total = subtotal + profit;
-  const breakdown = `ONE-WAY: ${oneWay} km | ROUND TRIP: ${oneWay} x 2 = ${roundTrip} km\nFUEL: ${roundTrip} km / ${fuelConsumption} L/100km = ${fuelLitres.toFixed(1)} L x R${fuelPrice} = R${fuelCost.toFixed(0)}\nWEAR & TEAR: ${roundTrip} km x R${wearTear}/km = R${wearCost.toFixed(0)}\nLABOUR/TIME: R${labour}\nRISK/LOADING: R${risk}\nPROFIT MARGIN: R${profit}\n----------------------\nTOTAL DELIVERY: R${total.toFixed(2).replace('.00','')}`;
+  
+  const breakdown = `FROM: ${BUSINESS_ORIGIN.address}\nONE-WAY: ${oneWay} km | ROUND TRIP: ${roundTrip} km\nFUEL: ${roundTrip} km ÷ ${fuelConsumption} L/100km = ${fuelLitres.toFixed(1)} L × R${fuelPrice} = R${fuelCost.toFixed(0)}\nWEAR & TEAR: ${roundTrip} km × R${wearTear}/km = R${wearCost.toFixed(0)}\nLABOUR/TIME: R${labour}\nRISK/LOADING: R${risk}\nPROFIT MARGIN: R${profit}\n----------------------\nTOTAL DELIVERY: R${total.toFixed(2).replace('.00','')}`;
+  
   document.getElementById('deliveryTotal').textContent = 'R' + total.toFixed(2).replace('.00','');
   document.getElementById('deliveryBreakdown').textContent = breakdown;
 }
@@ -1158,52 +1199,70 @@ function calculateDeliveryCost() {
 function updateDeliveryMap() {
   const province = document.getElementById('deliveryProvince').value;
   const town = document.getElementById('deliveryTown').value;
+  
   if (!deliveryMap) {
-    deliveryMap = L.map('deliveryMap').setView([-28.7282, 24.7499], 6);
+    deliveryMap = L.map('deliveryMap').setView(BUSINESS_ORIGIN.coords, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(deliveryMap);
-    L.marker([-28.7282, 24.7499]).addTo(deliveryMap).bindPopup('<b>7 Changes Enterprise</b><br>Kimberley, Northern Cape').openPopup();
+    
+    // Add business origin marker
+    L.marker(BUSINESS_ORIGIN.coords).addTo(deliveryMap)
+      .bindPopup(`<b>🏢 ${BUSINESS_ORIGIN.name}</b><br>${BUSINESS_ORIGIN.address}`)
+      .openPopup();
   }
+  
+  // Clear destination markers
   deliveryMap.eachLayer(layer => {
     if (layer instanceof L.Marker && layer.getPopup()?.getContent()?.includes('Destination')) {
       deliveryMap.removeLayer(layer);
     }
+    if (layer instanceof L.Polyline) {
+      deliveryMap.removeLayer(layer);
+    }
   });
+  
   if (town && TOWN_COORDS[town]) {
     const coords = TOWN_COORDS[town];
-    L.marker(coords).addTo(deliveryMap).bindPopup(`<b>Destination</b><br>${town}, ${province}`);
-    L.polyline([[-28.7282, 24.7499], coords], {color: '#ff9f43', dashArray: '5, 5'}).addTo(deliveryMap);
-    const bounds = L.latLngBounds([[-28.7282, 24.7499], coords]);
+    L.marker(coords).addTo(deliveryMap).bindPopup(`<b>📍 Destination</b><br>${town}, ${province}`);
+    L.polyline([BUSINESS_ORIGIN.coords, coords], {color: '#ff9f43', dashArray: '5, 5', weight: 3}).addTo(deliveryMap);
+    const bounds = L.latLngBounds([BUSINESS_ORIGIN.coords, coords]);
     deliveryMap.fitBounds(bounds.pad(0.2));
   }
 }
+
 function openDistanceHelper() {
   const town = document.getElementById('deliveryTown').value;
   const province = document.getElementById('deliveryProvince').value;
   const address = document.getElementById('deliveryAddress').value;
-  if (!town && !province) { alert('Select a province and town first, or enter a location name'); return; }
-  const location = address || town || province || 'South Africa';
-  const query = `driving directions from Kimberley Northern Cape to ${location}`;
-  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-  if (confirm(`Open Google Maps to check ACTUAL distance from Kimberley to ${location}?`)) {
+  
+  const origin = encodeURIComponent("21 7th Street, Homevale, Kimberley, 8301");
+  const destination = address 
+    ? encodeURIComponent(address + ", South Africa")
+    : encodeURIComponent((town || province || "South Africa") + ", South Africa");
+  
+  const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+  
+  if (confirm(`Open Google Maps to verify driving distance from:\n${BUSINESS_ORIGIN.address}\n\nto:\n${address || town || province}?\n\n💡 Note the km shown and enter it manually for accurate pricing.`)) {
     window.open(url, '_blank');
-    alert("Tip: Note the km distance shown, then enter it manually in the distance field for accurate pricing.");
   }
 }
 
+// ✅ UPDATED: Allow delivery cost for ALL locations including Kimberley
 function addDeliveryCost() {
   const province = document.getElementById('deliveryProvince').value;
   const town = document.getElementById('deliveryTown').value;
   const address = document.getElementById('deliveryAddress').value;
   const km = parseFloat(document.getElementById('deliveryKm').value) || 0;
+  
   if (!province) { alert('Please select a province'); return; }
-  if (km === 0) { alert('Kimberley is your base location - no delivery surcharge applies'); return; }
-  if (!km || km <= 0) { alert('Please enter a valid one-way distance in km'); return; }
+  if (!km || km <= 0) { alert('Please enter or auto-calculate a valid one-way distance in km'); return; }
+  
   const fuelConsumption = parseFloat(document.getElementById('cfgFuelConsumption').value) || 11;
   const fuelPrice = parseFloat(document.getElementById('cfgFuelPrice').value) || 28.50;
   const wearTear = parseFloat(document.getElementById('cfgWearTear').value) || 2.50;
   const labour = parseFloat(document.getElementById('cfgLabour').value) || 1000;
   const risk = parseFloat(document.getElementById('cfgRisk').value) || 800;
   const profit = parseFloat(document.getElementById('cfgProfit').value) || 3000;
+  
   const oneWay = km;
   const roundTrip = km * 2;
   const fuelLitres = roundTrip / fuelConsumption;
@@ -1211,15 +1270,34 @@ function addDeliveryCost() {
   const wearCost = roundTrip * wearTear;
   const subtotal = fuelCost + wearCost + labour + risk;
   const total = subtotal + profit;
-  const locationId = `${province}-${town || 'Unknown'}`;
+  
+  const locationId = `${province}-${town || 'Unknown'}-${address || ''}`;
   const existing = quoteItems.find(i => i.isDeliveryCost && i.locationId === locationId);
   if (existing) { if (!confirm(`Delivery cost for ${town || province} already in quote. Replace?`)) return; removeItem(existing.name); }
-  // ✅ SIMPLIFIED: Clean name for PDF without breakdown bullets
-  const pdfName = `Delivery Cost - ${province}${town ? ' (' + town + ')' : ''} | ${address || ''}`;
-  // ✅ SIMPLIFIED UI NAME: No detailed breakdown, just basic info
-  const uiName = `Delivery Cost - ${province}${town ? ' (' + town + ')' : ''}${address ? ' | ' + address : ''}`;
-  quoteItems.push({ name: uiName, pdfName: pdfName, price: total, quantity: 1, category: 'Services', isDeliveryCost: true, locationId: locationId, province: province, town: town, address: address, km: roundTrip, breakdown: {fuelCost, wearCost, labour, risk, profit, total} });
+  
+  const destLabel = address || town || province;
+  const pdfName = `Delivery: ${BUSINESS_ORIGIN.name} → ${destLabel} (${roundTrip} km RT)`;
+  const uiName = `🚚 Delivery to ${destLabel} | ${roundTrip} km RT`;
+  
+  quoteItems.push({ 
+    name: uiName, 
+    pdfName: pdfName, 
+    price: total, 
+    quantity: 1, 
+    category: 'Services', 
+    isDeliveryCost: true, 
+    locationId: locationId, 
+    province: province, 
+    town: town, 
+    address: address, 
+    km: roundTrip, 
+    breakdown: {fuelCost, wearCost, labour, risk, profit, total},
+    origin: BUSINESS_ORIGIN.address
+  });
+  
   renderQuote();
+  
+  // Reset delivery form
   document.getElementById('deliveryProvince').value = '';
   document.getElementById('deliveryTown').value = '';
   document.getElementById('deliveryTown').disabled = true;
@@ -1228,16 +1306,22 @@ function addDeliveryCost() {
   document.getElementById('deliveryAddress').value = '';
   document.getElementById('deliveryKm').value = '';
   document.getElementById('deliveryTotal').textContent = 'R0.00';
-  document.getElementById('deliveryBreakdown').textContent = 'Enter distance to calculate costs';
+  document.getElementById('deliveryBreakdown').textContent = 'Select destination and calculate distance';
+  document.getElementById('distanceStatus').textContent = '';
+  
   if (deliveryMap) {
-    deliveryMap.setView([-28.7282, 24.7499], 6);
+    deliveryMap.setView(BUSINESS_ORIGIN.coords, 13);
     deliveryMap.eachLayer(layer => {
       if (layer instanceof L.Marker && layer.getPopup()?.getContent()?.includes('Destination')) {
+        deliveryMap.removeLayer(layer);
+      }
+      if (layer instanceof L.Polyline) {
         deliveryMap.removeLayer(layer);
       }
     });
   }
 }
+
 document.addEventListener('DOMContentLoaded',()=>{
   populateDropdown();
   setupDeliveryCalculators();
