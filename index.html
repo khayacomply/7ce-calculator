@@ -351,10 +351,21 @@ const BUSINESS_ORIGIN = {
   name: "7 Changes Enterprise HQ"
 };
 
-const BANKING_DETAILS={bank:"First National Bank",accountHolder:"7 Changes Enterprise",accountType:"Current Account",accountNumber:"63113987870",contactPerson:"Angie",phone:"076 113 5095",emailGeneral:"angie@7changesenterprise.co.za",emailQuotes:"quotes@7changesenterprise.co.za"};
-let quoteItems=[],quoteRef="",logoDataUrl=null,watermarkDataUrl=null,currentDocumentType="QUOTE";
+const BANKING_DETAILS = {
+  bank:"First National Bank",
+  accountHolder:"7 Changes Enterprise",
+  accountType:"Current Account",
+  accountNumber:"63113987870",
+  contactPerson:"Angie",
+  phone:"076 113 5095",
+  emailGeneral:"angie@7changesenterprise.co.za",
+  emailQuotes:"quotes@7changesenterprise.co.za"
+};
+
+let quoteItems = [], quoteRef = "", logoDataUrl = null, watermarkDataUrl = null, currentDocumentType = "QUOTE";
+
+// ✅ FIXED: Removed the extra outer brackets `[[` and `]]`
 let services = [
- [
   {name:"Centerpiece", price:50, category:"Event Decor", stock: 350, type:"product"},
   {name:"Napkins", price:10, category:"Event Decor", stock: 500, type:"product"},
   {name:"Under Plates", price:16, category:"Event Decor", stock: 500, type:"product"},
@@ -439,7 +450,8 @@ let services = [
   {name:"Transport (Long Distance)", price:800, category:"Services", stock: "unlimited", type:"service"},
   {name:"Funeral Tent 5x10", price:1000, category:"Tents", stock: 6, type:"product"},
   {name:"Funeral Tent 7x12", price:1200, category:"Tents", stock: 6, type:"product"}
-]
+];
+
 const SA_LOCATIONS = {
   "Gauteng": ["Johannesburg", "Pretoria", "Soweto", "Sandton", "Midrand", "Centurion", "Benoni", "Boksburg", "Brakpan", "Germiston", "Kempton Park", "Springs", "Alberton", "Edenvale", "Bedfordview", "Randburg", "Roodepoort", "Vanderbijlpark", "Vereeniging", "Sebokeng"],
   "Limpopo": ["Polokwane", "Thohoyandou", "Giyani", "Phalaborwa", "Tzaneen", "Mokopane", "Bela-Bela", "Lephalale", "Musina"],
@@ -451,7 +463,6 @@ const SA_LOCATIONS = {
   "Northern Cape": ["Kimberley", "Upington", "Kuruman", "De Aar", "Springbok", "Prieska", "Carnarvon", "Williston", "Ritchie", "Barkly West", "Warrenton"],
   "North West": ["Mahikeng", "Rustenburg", "Potchefstroom", "Klerksdorp", "Brits", "Lichtenburg", "Vryburg", "Taung", "Schweizer-Reneke"]
 };
-
 const TOWN_COORDS = {
   "Kimberley": [-28.7282, 24.7499], "Johannesburg": [-26.2041, 28.0473], "Pretoria": [-25.7479, 28.2293],
   "Durban": [-29.8587, 31.0218], "Cape Town": [-33.9249, 18.4241], "Bloemfontein": [-29.1211, 26.2142],
