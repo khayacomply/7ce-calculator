@@ -347,7 +347,7 @@ button.danger:hover{background:#ff6666;}
 // ===== BUSINESS ORIGIN CONFIG =====
 const BUSINESS_ORIGIN = {
   address: "21 7th Street, Homevale, Kimberley, 8301, Northern Cape, South Africa",
-  coords: [-28.7647, 24.7624], // Homevale, Kimberley approximate coordinates
+  coords: [-28.7647, 24.7624],
   name: "7 Changes Enterprise HQ"
 };
 
@@ -364,9 +364,8 @@ const BANKING_DETAILS = {
 
 let quoteItems = [], quoteRef = "", logoDataUrl = null, watermarkDataUrl = null, currentDocumentType = "QUOTE";
 
-// ✅ FIXED: Removed the extra outer brackets `[[` and `]]`
-  let services = [
-    {name:"Centerpiece", price:50, category:"Event Decor", stock: 350, type:"product"},
+let services = [
+  {name:"Centerpiece", price:50, category:"Event Decor", stock: 350, type:"product"},
   {name:"Flowers", price:450, category:"Event Decor", stock: 1000, type:"product"},
   {name:"Premium Flowers", price:550, category:"Event Decor", stock: 1000, type:"product"},
   {name:"Napkins", price:10, category:"Event Decor", stock: 500, type:"product"},
@@ -430,7 +429,7 @@ let quoteItems = [], quoteRef = "", logoDataUrl = null, watermarkDataUrl = null,
   {name:"Red Carpet 20m", price:800, category:"Decor", stock: 6, type:"product"},
   {name:"Stanchions", price:150, category:"Decor", stock: 320, type:"product"},
   {name:"Stage", price:600, category:"Equipment", stock: 310, type:"product"},
-   {name:"Cabana Tent - 30 people (3x6)", price:800, category:"Cabana Tents", stock: 4, type:"product"},
+  {name:"Cabana Tent - 30 people (3x6)", price:800, category:"Cabana Tents", stock: 4, type:"product"},
   {name:"Cabana Tent - 40 people (3x9)", price:1000, category:"Cabana Tents", stock: 3, type:"product"},
   {name:"Cabana Tent - 60 people (6x6)", price:1200, category:"Cabana Tents", stock: 2, type:"product"},
   {name:"Cabana Tent - 80 people (6x9)", price:1500, category:"Cabana Tents", stock: 2, type:"product"},
@@ -526,11 +525,9 @@ const DISTANCE_REFERENCE = {
   "Knysna": 990, "Oudtshoorn": 870, "Hermanus": 1080, "Somerset West": 1045
 };
 
-// ===== HAVERSINE FORMULA FOR DISTANCE CALCULATION =====
 function toRad(deg) { return deg * Math.PI / 180; }
-
 function haversineDistance(coord1, coord2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = toRad(coord2[0] - coord1[0]);
   const dLon = toRad(coord2[1] - coord1[1]);
   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -540,7 +537,6 @@ function haversineDistance(coord1, coord2) {
   return Math.round(R * c);
 }
 
-// ===== AUTO-CALCULATE DISTANCE FUNCTION =====
 async function autoCalculateDistance() {
   const btn = document.getElementById('autoCalcBtn');
   const status = document.getElementById('distanceStatus');
@@ -548,10 +544,7 @@ async function autoCalculateDistance() {
   const town = document.getElementById('deliveryTown').value;
   const address = document.getElementById('deliveryAddress').value.trim();
   
-  if (!province) {
-    alert('Please select a province first');
-    return;
-  }
+  if (!province) { alert('Please select a province first'); return; }
   
   btn.disabled = true;
   btn.innerHTML = '⏳ Calculating...';
@@ -562,14 +555,11 @@ async function autoCalculateDistance() {
     let destCoords = null;
     let destName = town || province;
     
-    // Try to get coordinates from our lookup table first
     if (town && TOWN_COORDS[town]) {
       destCoords = TOWN_COORDS[town];
     }
     
-    // If no coords found, use province center as fallback
     if (!destCoords && province) {
-      // Use first town in province as approximate center
       const firstTown = SA_LOCATIONS[province]?.[0];
       if (firstTown && TOWN_COORDS[firstTown]) {
         destCoords = TOWN_COORDS[firstTown];
@@ -578,17 +568,11 @@ async function autoCalculateDistance() {
     }
     
     if (destCoords) {
-      // Calculate distance using Haversine formula
       const distance = haversineDistance(BUSINESS_ORIGIN.coords, destCoords);
       document.getElementById('deliveryKm').value = distance;
-      
-      // Update status
       status.textContent = `✓ ~${distance} km (straight-line estimate)`;
       status.className = 'distance-status calculated';
-      
-      // Recalculate delivery cost
       calculateDeliveryCost();
-      
       alert(`📍 Estimated distance to ${destName}: ${distance} km\n\n💡 This is a straight-line estimate. Click "🗺️ Verify" for precise driving distance.`);
     } else {
       status.textContent = '⚠️ No coordinates found';
@@ -614,7 +598,6 @@ function loadAdjustments(){return JSON.parse(localStorage.getItem('7CE_stock_adj
 function saveAdjustments(a){localStorage.setItem('7CE_stock_adjustments',JSON.stringify(a))}
 loadStockFromStorage();
 
-// ===== JSON EXPORT/IMPORT FUNCTIONS =====
 function exportQuoteJSON() {
   if (!quoteItems.length && !document.getElementById('clientName').value) {
     alert("⚠️ No quote data to export. Add client info or items first.");
@@ -754,8 +737,6 @@ function convertToInvoice() {
   generateDocument("INVOICE", dueDateStr);
 }
 
-// ===== END JSON FUNCTIONS =====
-
 document.getElementById("logoUpload").addEventListener("change",function(e){
   if(e.target.files && e.target.files[0]){
     const reader=new FileReader();
@@ -788,7 +769,6 @@ function populateDropdown(){
     });dd.appendChild(og)
   })
 }
-populateDropdown();
 const searchInput=document.getElementById("serviceSearch"),searchResults=document.getElementById("searchResults");
 searchInput.addEventListener("input",function(){
   const q=this.value.toLowerCase().trim();searchResults.innerHTML="";
@@ -948,12 +928,18 @@ function generateDocument(type, dueDateOverride) {
   doc.text(`Event Date: ${document.getElementById("eventDate").value}`, 90, 52);
   doc.text(`Venue: ${document.getElementById("eventVenue").value}`, 90, 58);
 
+  // ✅ FIXED: Format prices to 2 decimal places in PDF table
   doc.autoTable({
     startY: 75,
     margin: { top: 75, bottom: 25 },
     pageBreak: 'auto',
     head: [['Item', 'Qty', 'Unit Price', 'Total']],
-    body: quoteItems.map(item => [item.pdfName || item.name, item.quantity, "R" + item.price, "R" + (item.price * item.quantity)]),
+    body: quoteItems.map(item => [
+      item.pdfName || item.name, 
+      item.quantity, 
+      "R" + Number(item.price).toFixed(2), 
+      "R" + (Number(item.price) * item.quantity).toFixed(2)
+    ]),
     theme: 'grid',
     styles: { fillColor: [25, 25, 25], textColor: [220, 220, 220], lineColor: lime, lineWidth: 0.2, fontSize: 9 },
     headStyles: { fillColor: lime, textColor: [0, 0, 0], fontStyle: 'bold' },
@@ -1182,7 +1168,6 @@ function setupDeliveryCalculators() {
   });
 }
 
-// ✅ UPDATED: Calculate delivery cost from business origin to ANY location
 function calculateDeliveryCost() {
   const province = document.getElementById('deliveryProvince').value;
   const km = parseFloat(document.getElementById('deliveryKm').value) || 0;
@@ -1193,7 +1178,6 @@ function calculateDeliveryCost() {
   const risk = parseFloat(document.getElementById('cfgRisk').value) || 800;
   const profit = parseFloat(document.getElementById('cfgProfit').value) || 3000;
   
-  // All locations including Kimberley now charged based on distance
   if (!province || km <= 0) {
     document.getElementById('deliveryTotal').textContent = 'R0.00';
     document.getElementById('deliveryBreakdown').textContent = 'Select destination and calculate distance';
@@ -1222,13 +1206,11 @@ function updateDeliveryMap() {
     deliveryMap = L.map('deliveryMap').setView(BUSINESS_ORIGIN.coords, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(deliveryMap);
     
-    // Add business origin marker
     L.marker(BUSINESS_ORIGIN.coords).addTo(deliveryMap)
       .bindPopup(`<b>🏢 ${BUSINESS_ORIGIN.name}</b><br>${BUSINESS_ORIGIN.address}`)
       .openPopup();
   }
   
-  // Clear destination markers
   deliveryMap.eachLayer(layer => {
     if (layer instanceof L.Marker && layer.getPopup()?.getContent()?.includes('Destination')) {
       deliveryMap.removeLayer(layer);
@@ -1264,7 +1246,7 @@ function openDistanceHelper() {
   }
 }
 
-// ✅ UPDATED: Allow delivery cost for ALL locations including Kimberley
+// ✅ FIXED: Round delivery price to 2 decimals when adding to quote
 function addDeliveryCost() {
   const province = document.getElementById('deliveryProvince').value;
   const town = document.getElementById('deliveryTown').value;
@@ -1297,10 +1279,11 @@ function addDeliveryCost() {
   const pdfName = `Delivery: ${BUSINESS_ORIGIN.name} → ${destLabel} (${roundTrip} km RT)`;
   const uiName = `🚚 Delivery to ${destLabel} | ${roundTrip} km RT`;
   
+  // ✅ FIXED: Round price and breakdown values to 2 decimals
   quoteItems.push({ 
     name: uiName, 
     pdfName: pdfName, 
-    price: total, 
+    price: Number(total.toFixed(2)),
     quantity: 1, 
     category: 'Services', 
     isDeliveryCost: true, 
@@ -1309,13 +1292,19 @@ function addDeliveryCost() {
     town: town, 
     address: address, 
     km: roundTrip, 
-    breakdown: {fuelCost, wearCost, labour, risk, profit, total},
+    breakdown: {
+      fuelCost: Number(fuelCost.toFixed(2)), 
+      wearCost: Number(wearCost.toFixed(2)), 
+      labour: Number(labour.toFixed(2)), 
+      risk: Number(risk.toFixed(2)), 
+      profit: Number(profit.toFixed(2)), 
+      total: Number(total.toFixed(2))
+    },
     origin: BUSINESS_ORIGIN.address
   });
   
   renderQuote();
   
-  // Reset delivery form
   document.getElementById('deliveryProvince').value = '';
   document.getElementById('deliveryTown').value = '';
   document.getElementById('deliveryTown').disabled = true;
