@@ -372,11 +372,11 @@ let services = [
   { name: "Petite Drape",             price: 4000, category: "Draping",     stock: 1,    type: "service" },
   { name: "Classic Drape",            price: 6000, category: "Draping",     stock: 1,    type: "service" },
   { name: "Grand Drape",              price: 8000, category: "Draping",     stock: 1,    type: "service" },
-  { name: "Centerpiece Décor Light",  price: 150, category: "Lighting",    stock: 30,   type: "product" },
-  { name: "Centerpiece",              price: 150, category: "Lighting",    stock: 60,   type: "product" },
+  { name: "Centerpiece Décor Light",  price: 150,  category: "Lighting",    stock: 30,   type: "product" },
+  { name: "Centerpiece (Lighting)",   price: 150,  category: "Lighting",    stock: 60,   type: "product" }, // Renamed to avoid duplicates
   { name: "Wall Draping Décor Light", price: 6000, category: "Lighting",    stock: 30,   type: "product" },
   { name: "Roof Draping Décor Light", price: 8000, category: "Lighting",    stock: 30,   type: "product" },
-  { name: "Centerpiece",              price: 50,   category: "Event Decor", stock: 350,  type: "product" },
+  { name: "Centerpiece (Event Decor)",price: 50,   category: "Event Decor", stock: 350,  type: "product" }, // Renamed to avoid duplicates
   { name: "Flowers",                  price: 450,  category: "Event Decor", stock: 1000, type: "product" },
   { name: "Premium Flowers",          price: 550,  category: "Event Decor", stock: 1000, type: "product" },
   { name: "Artificial Flowers",       price: 80,   category: "Event Decor", stock: 100,  type: "product" },
@@ -396,17 +396,17 @@ let services = [
   { name: "White Plate",              price: 14,   category: "Crockery",    stock: 500,  type: "product" },
   { name: "White Side Plate",         price: 12,   category: "Crockery",    stock: 450,  type: "product" },
   { name: "White Dessert Plate",      price: 10,   category: "Crockery",    stock: 450,  type: "product" }, 
-  { name: "Gold Dessert Spoon",       price: 10,    category: "Cutlery",     stock: 650,  type: "product" }, 
-  { name: "Gold Fork",                price: 10,    category: "Cutlery",     stock: 650,  type: "product" },
-  { name: "Gold Knife",               price: 10,    category: "Cutlery",     stock: 650,  type: "product" },
-  { name: "Gold Range",               price: 30,   category: "Cutlery",     stock: 500,   type: "product" },
+  { name: "Gold Dessert Spoon",       price: 10,   category: "Cutlery",     stock: 650,  type: "product" }, 
+  { name: "Gold Fork",                price: 10,   category: "Cutlery",     stock: 650,  type: "product" },
+  { name: "Gold Knife",               price: 10,   category: "Cutlery",     stock: 650,  type: "product" },
+  { name: "Gold Range",               price: 30,   category: "Cutlery",     stock: 500,  type: "product" },
   { name: "Kiddies theme plates",     price: 14,   category: "Crockery",    stock: 30,   type: "product" },
   { name: "White Wine Glass",         price: 8,    category: "Glassware",   stock: 500,  type: "product" },
   { name: "Red Wine Glass",           price: 8,    category: "Glassware",   stock: 500,  type: "product" },
   { name: "Water Glass",              price: 8,    category: "Glassware",   stock: 500,  type: "product" },
   { name: "Fancy Cocktail Glass",     price: 14,   category: "Glassware",   stock: 500,  type: "product" },
   { name: "Kiddies theme glass",      price: 8,    category: "Glassware",   stock: 30,   type: "product" },
-  { name: "Normal Black Chair",       price: 10,    category: "Chairs",      stock: 500,  type: "product" },
+  { name: "Normal Black Chair",       price: 10,   category: "Chairs",      stock: 500,  type: "product" },
   { name: "Padded Chair",             price: 120,  category: "Chairs",      stock: 400,  type: "product" },
   { name: "Wimbledon/Tiffany/Spider", price: 40,   category: "Chairs",      stock: 660,  type: "product" },
   { name: "His & Her Chairs",         price: 400,  category: "Chairs",      stock: 305,  type: "product" },
@@ -464,10 +464,10 @@ let services = [
   { name: "Funeral Tent 5x10",            price: 1000, category: "Tents",            stock: 6, type: "product" },
   { name: "Funeral Tent 7x12",            price: 1200, category: "Tents",            stock: 6, type: "product" },
   { name: "Waterproof Stretch Tent 5x10", price: 1600, category: "Stretch Tents",    stock: 10, type: "product" },
-  { name: "MD Package A - Décor",              price: 3500, category: "Matric Dance Packages", stock: "unlimited", type: "package" },
-  { name: "MD Package B - Décor and Venue",    price: 4000, category: "Matric Dance Packages", stock: "unlimited", type: "package" },
-  { name: "MD Package C - Décor and Car",      price: 6000, category: "Matric Dance Packages", stock: "unlimited", type: "package" },
-  { name: "MD Package D - Décor, Car & Venue", price: 6500, category: "Matric Dance Packages", stock: "unlimited", type: "package" },
+  { name: "MD Package A - Décor",              price: 3500, category: "Matric Dance Packages", stock: 9999, type: "package" }, // Changed to 9999
+  { name: "MD Package B - Décor and Venue",    price: 4000, category: "Matric Dance Packages", stock: 9999, type: "package" }, // Changed to 9999
+  { name: "MD Package C - Décor and Car",      price: 6000, category: "Matric Dance Packages", stock: 9999, type: "package" }, // Changed to 9999
+  { name: "MD Package D - Décor, Car & Venue", price: 6500, category: "Matric Dance Packages", stock: 9999, type: "package" }, // Changed to 9999
   { name: "Stage",                    price: 600,  category: "Equipment",   stock: 310,  type: "product" },
   { name: "Mobile Kitchen",           price: 1100, category: "Equipment",   stock: 2,    type: "product" },
   { name: "Mobile Freezer",           price: 1300, category: "Equipment",   stock: 2,    type: "product" },
@@ -478,12 +478,13 @@ let services = [
   { name: "Luxurious Car",            price: 2500, category: "Equipment",   stock: 301,  type: "product" },
   { name: "Drone (Video & Photos)",   price: 1500, category: "Equipment",   stock: 302,  type: "product" },
   { name: "ALVA Gas Patio Heater",    price: 350,  category: "Equipment",   stock: 15,   type: "product" },
-  { name: "Set Up",                   price: 600,  category: "Services",    stock: "unlimited", type: "service" },
-  { name: "Set Up (Full Service)",    price: 3000, category: "Services",    stock: "unlimited", type: "service" },
-  { name: "Transport",                price: 300,  category: "Services",    stock: "unlimited", type: "service" },
-  { name: "Transport (Long Distance)",price: 800,  category: "Services",    stock: "unlimited", type: "service" }
+  { name: "Set Up",                   price: 600,  category: "Services",    stock: 9999, type: "service" }, // Changed to 9999
+  { name: "Set Up (Full Service)",    price: 3000, category: "Services",    stock: 9999, type: "service" }, // Changed to 9999
+  { name: "Transport",                price: 300,  category: "Services",    stock: 9999, type: "service" }, // Changed to 9999
+  { name: "Transport (Long Distance)",price: 800,  category: "Services",    stock: 9999, type: "service" }  // Changed to 9999
 ];
-const SA_LOCATIONS = {
+  
+  const SA_LOCATIONS = {
   "Gauteng": ["Johannesburg", "Pretoria", "Soweto", "Sandton", "Midrand", "Centurion", "Benoni", "Boksburg", "Brakpan", "Germiston", "Kempton Park", "Springs", "Alberton", "Edenvale", "Bedfordview", "Randburg", "Roodepoort", "Vanderbijlpark", "Vereeniging", "Sebokeng"],
   "Limpopo": ["Polokwane", "Thohoyandou", "Giyani", "Phalaborwa", "Tzaneen", "Mokopane", "Bela-Bela", "Lephalale", "Musina"],
   "Mpumalanga": ["Nelspruit", "Witbank", "Secunda", "Standerton", "Ermelo", "Middelburg", "Barberton", "Hazyview", "White River"],
